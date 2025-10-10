@@ -1,0 +1,44 @@
+void showMenu()
+{
+  Brain.Screen.clearScreen();
+  Brain.Screen.setCursor(1,1);
+  Brain.Screen.print("What drink would you like?\n  Fanta\n  Coca Cola\n  Pepsi\n  Sprite");
+  Brain.Screen.setCursor(1,1);
+  Brain.Screen.print(">");
+  while(!Brain.buttonLeft.pressing() && !Brain.buttonRight.pressing())
+  {}
+  if(Brain.buttonLeft.pressing())
+  {
+    if (Brain.Screen.row() > 1)
+    {
+      Brain.Screen.setCursor(Brain.Screen.row(), 1);
+      Brain.Screen.print(" ");      //Shold overwrite the > selection arrrow
+      Brain.Screen.setCursor(Brain.Screen.row() - 1, 1);
+      Brain.Screen.print(">");
+    }
+  }
+  if(Brain.buttonRight.pressing())
+  {
+    if (Brain.Screen.row() < 4)
+    {
+      Brain.Screen.setCursor(Brain.Screen.row(), 1);
+      Brain.Screen.print(" ");      //Shold clear the > selection arrrow
+      Brain.Screen.setCursor(Brain.Screen.row() + 1, 1);
+      Brain.Screen.print(">");
+    }
+  }
+  if(Brain.buttonCheck.pressing())
+  {
+    switch (Brain.Screen.row())
+    {
+      case 1:
+        Brain.Screen.print("Fanta");      //Will have a function that makes the robot add fanta to the list of things to get
+     case 2:
+        Brain.Screen.print("Coca Cola");
+      case 3:
+        Brain.Screen.print("Pepsi");
+      case 4:
+        Brain.Screen.print("Sprite");
+    }
+  }
+}
