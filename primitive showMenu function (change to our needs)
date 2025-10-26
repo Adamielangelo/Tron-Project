@@ -3,6 +3,15 @@
 double couchPos[2] = {0,0};
 //double robotPos[2] = {0,0}; May or may not need depending on how we make the coordinate system work
 
+//Function prototypes
+void waitForTouch();
+void findCouch();
+void menuSelect();
+void returnHome();
+void getDrink();
+void returnToCouch();
+//We need to have at least one return a value. Check line 110
+
 int main()
 {
 	calibrateAllSensors();
@@ -20,11 +29,11 @@ int main()
 		
 		//Turn around (Didn't program because it'll be done differently depending on how we do the coordinate system)
 		//returnHome(); (Will include object-detection code. Didn't program yet because it'll be done differently depending on how we do the coordinate system)
-		for (int i = 0; i < 6; i++) (6?)
+		for (int i = 0; i < 6; i++) //(6?)
 		{
 			getDrink(drinkSelection[i]); //The robot will go get the drink, pick it up, and put it in a basket (Can be changed to have the for loop include the returnHome() and returnCouch() so that it doesn't need a basket)
 		}
-		//returnCouch();
+		returnToCouch();
 		Brain.playSound(tada);
 	}
 }
@@ -125,6 +134,47 @@ void returnHome()
 
 void getDrink(std::string drink)	//The robot will go get the drink, pick it up, and put it in a basket
 {
-	//The distance sensor and the optical sensor have to be like right on top of the other
+	const double CLAW_LENGTH_PLUS_5_MM = 20; //CHANGE ONCE WE MEASURE IT
+	std::string searchColour = "Nothing";
+	if (drink == "Fanta")
+		searchColour = "orange";
+	else if (drink == "Coca Cola")
+		searchColour = "red";
+	else if (drink == "Pepsi")
+		searchColour = blue;
+	else if (drink == "Sprite")
+		searchColour = green;
+	
+	//The distance sensor and the optical sensor have to be like right on top of the other for this to work, which both have to be like right on top of the claw
+	motorLeft.spin(forward,10,percent);
+	motorRight.spin(forward,10,percent);
+	while (distanceSensor.objectDistance(mm) > CLAW_LENGTH_PLUS_5_MM)	//Change name of distance sensor
+	{}
+	motorLeft.stop(brake);
+	motorRight.stop(brake);
+	
+	bool drinkFound = false;
+	{
+		if (Optical.color() != red/*Or any of the other colours of the drinks*/){
+		//Adjust the robot's position a little bit to the left/right and try again
+		//If we need to, try it again with the light on
+		}
+		
+		if (Optical.color() == searchColour)
+		{
+			//Grab the drink and put in basket
+			drinkFound = true;
+			//Move back to (0,0) (home);
+		}
+		else
+		{
+			//Move DRINK_SEPARATION_DISTANCE to the right
+			//Unless it's out of options. Then return to (0,0)
+		}
+	}
 }
 
+void returnToCouch()
+{
+	
+}
