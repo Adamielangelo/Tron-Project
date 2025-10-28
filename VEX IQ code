@@ -1,6 +1,8 @@
-
 //Global variables
 double couchPos[2] = {0,0};
+double homePos[2] = {0,0};
+double robotPos[2] = {0,0}
+std::string facing = "plusY;"
 //double robotPos[2] = {0,0}; May or may not need depending on how we make the coordinate system work
 
 //Function prototypes
@@ -20,7 +22,6 @@ int main()
 	{	//The robot gets placed at the drink stand. Make sure it can see the first drink option in the line.
 		
 		waitForTouch();
-		//Set motor encoders to position (0,0) in a coordinate system we'll figure out. If we can't get the robot's wheels to be perpendicular with minimal drag, I have an idea that would work as an alternative method of having the coordinate system by storing the encoder values in variables.
 		findCouch(); //(We might be able to change this to make it not have to be in a straight line, but that can come back to this later)
 		waitForTouch();
 		
@@ -177,4 +178,98 @@ void getDrink(std::string drink)	//The robot will go get the drink, pick it up, 
 void returnToCouch()
 {
 	
+}
+
+void moveTo(double position[2])
+{
+	if (position[0] < robotPos[0])
+		robotTurn(______);
+	while (robotPos[0] != position[0] && robotPos[1] != position[1])
+	{
+		do
+		{
+			bool isStuck = false;
+		} while ();
+	}
+	//while (not at position)
+	//{
+			/*
+			//do
+			{
+				//bool stuck = false;
+				//Try to go along y axis
+				//If it gets stuck (distance sensor), playsound(alarm2), wait 7 seconds
+				//Try again. If stuck, strafe to the right a bit, then try to go forward again.
+				//If stuck, strafe a bit to the left, then tray to go forward again.
+			} while (y value is not at where it needs to be AND not stuck);
+	
+			//do
+			{
+				//bool stuck = false;
+				//Try to go along x axis
+				//If it gets stuck (distance sensor), playsound(alarm2), wait 7 seconds
+				//Try again. If stuck, strafe to the right a bit, then try to go forward again.
+				//If stuck, strafe a bit to the left, then tray to go forward again.
+				//else, stuck = true;
+			} while (x value is not at where it needs to be AND not stuck);
+			*/
+			
+			//if it truly is unsuccessful, (if it can't move the wheels for either the y axis or the x axis) siren2, wait a second, siren2, wait a second, siren2, wait a second, poweroff sound. Or we could make it try to pathfind its way back
+	//}	
+	
+}
+
+void robotTurn(std::string direction) //Turns the robot either to the left or to the right RELATIVE TO ITSELF
+{
+	const double TURNING_SPEED = 20, ROTATION_ANGLE = 90;
+	
+	motorLeft.stop(brake);
+	motorRight.stop(brake);
+	if (facing == "plusX" || facing == "plusY")
+		robotPos[1] = motorLeft.position(mm);
+	else if (facing == "minusX" || facing == "minusY")
+		robotPos[1] = -motorLeft.position(mm);
+	
+	BrainIntertial.setRotation(0, degrees);
+	if (direction == "right")
+	{
+		if (facing == plusX)
+			facing = minusY;
+		else if (facing == minusY)
+			facing = minusX;
+		else if (facing == minusX)
+			facing = plusY;
+		else if (facing = plusY)
+			facing = plusX;
+		motorLeft.spin(forward, TURNING_SPEED, percent);
+		motorLeft.spin(reverse, TURNING_SPEED, percent); //Might have to change depending on how the spinning works out
+		while (BrainIntertial.rotation(degrees) < ROTATION_ANGLE) //Might have to change the ROTATION_ANGLE and -ROTATION_ANGLE
+		{}
+	}
+	else if (direction == "left")
+	{
+		if (facing == plusX)
+			facing = plusY;
+		else if (facing == plusY)
+			facing = minusX;
+		else if (facing == minusX)
+			facing = minusY;
+		else if (facing = minusY)
+			facing = plusX;
+		motorLeft.spin(reverse, TURNING_SPEED, percent);
+		motorLeft.spin(forward, TURNING_SPEED, percent);
+		while (BrainIntertial.rotation(degrees) > -ROTATION_ANGLE) //Might have to change the ROTATION_ANGLE and -ROTATION_ANGLE
+		{}
+	}
+	motorLeft.stop(brake);
+		motorRight.stop(brake);
+	
+	if (facing == "plusX")
+		motorLeft.setPosition(robotPos[0], mm);
+	else if (facing == "plusY")
+		motorLeft.setPosition(robotPos[1], mm);
+	else if (facing == "minusX")
+		motorLeft.setPosition(-robotPos[0], mm);
+	else if (facing == "minusY")
+		motorLeft.setPosition(-robotPos[1], mm);
 }
