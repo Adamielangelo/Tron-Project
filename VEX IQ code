@@ -3,15 +3,15 @@ double couchPos[2] = {0,0};
 double homePos[2] = {0,0};
 double robotPos[2] = {0,0}
 std::string facing = "plusY;"
-//double robotPos[2] = {0,0}; May or may not need depending on how we make the coordinate system work
 
 //Function prototypes
 void waitForTouch();
 void findCouch();
 void menuSelect();
-void returnHome();
 void getDrink();
-void returnToCouch();
+void moveTo();
+void robotTurn();
+void robotTurnToFace();
 //We need to have at least one return a value. Check line 110
 
 int main()
@@ -28,13 +28,13 @@ int main()
 		std::string drinkSelection[6] = {"Nothing", "Nothing", "Nothing", "Nothing", "Nothing", "Nothing"}
 		menuSelect(drinkSelection);
 		
-		//Turn around (Didn't program because it'll be done differently depending on how we do the coordinate system)
-		//returnHome(); (Will include object-detection code. Didn't program yet because it'll be done differently depending on how we do the coordinate system)
+		robotTurn("around");
+		moveTo(homePos);
 		for (int i = 0; i < 6; i++) //(6?)
 		{
 			getDrink(drinkSelection[i]); //The robot will go get the drink, pick it up, and put it in a basket (Can be changed to have the for loop include the returnHome() and returnCouch() so that it doesn't need a basket)
 		}
-		returnToCouch();
+		moveTo(couchPos);
 		Brain.playSound(tada);
 	}
 }
@@ -60,7 +60,6 @@ void findCouch()
 	motorLeft.stop(brake);
 	motorRight.stop(brake);
 	motorLeft.setPosition(0, mm);
-	//motorRight.setPosition(0, mm); May or may not be necessary depending on how we do the wheels
 	
 	motorLeft.spin(forward, 100, percent); //Might have to slow down if it's not precise enough
 	motorRght.spin(forward, 100, percent);
@@ -128,11 +127,6 @@ void menuSelect(std::string order[6])
 
 } //(We could also add an "Other" option that lets you choose a colour in case we put other cans)
 
-void returnHome()
-{
-	
-}
-
 void getDrink(std::string drink)	//The robot will go get the drink, pick it up, and put it in a basket
 {
 	const double CLAW_LENGTH_PLUS_5_MM = 20; //CHANGE ONCE WE MEASURE IT
@@ -175,51 +169,111 @@ void getDrink(std::string drink)	//The robot will go get the drink, pick it up, 
 	}
 }
 
-void returnToCouch()
+void moveTo(double position[2]) //We might be able to simplify the trajectory of the robot to remove this function
 {
+	const float STOP_DISTANCE = 15; //Change maybe
 	
-}
-
-void moveTo(double position[2])
-{
-	if (position[0] < robotPos[0])
-		robotTurn(______);
 	while (robotPos[0] != position[0] && robotPos[1] != position[1])
 	{
+		bool hasMoved = false;
+		
+		//Orientates the robot to face the correct direction in Y
+		if (position[1] > robotPos[1])
+			robotTurnToFace("plusY");
+		else if (position[1] < robotPos[1])
+			robotTurnToFace("minusY");
+		//Moves the robot along the Y axis until it can't/doesn't need to anymore
 		do
 		{
 			bool isStuck = false;
-		} while ();
-	}
-	//while (not at position)
-	//{
-			/*
-			//do
+			if (distanceSensor.objectDistance(mm) > STOP_DISTANCE)
 			{
-				//bool stuck = false;
-				//Try to go along y axis
-				//If it gets stuck (distance sensor), playsound(alarm2), wait 7 seconds
-				//Try again. If stuck, strafe to the right a bit, then try to go forward again.
-				//If stuck, strafe a bit to the left, then tray to go forward again.
+				motorLeft.spin();
+				motorRight.spin();
+				hasMoved = true;
+			}
+			while (distanceSensor.objectDistance(mm) > STOP_DISTANCE && robotPos[1] != position[1])
+			{}
+			motorLeft.stop(brake);
+			motorRight.stop(brake);
+			if (robotPos[1] != position[1])	//(If it stopped, but has not yet reached its destination in Y)
+			{
+				Brain.playSound(alarm2);//HONK GET OUT THE WAY
+				wait(7);
+			}
+			motorLeft.spin();
+			motorRight.spin();
+			while (distanceSensor.objectDistance(mm) > STOP_DISTANCE && robotPos[1] != position[1])
+			{}
+			motorLeft.stop(brake);
+			motorRight.stop(brake);
+			if (robotPos[1] != position[1])	//(If it stopped, but has not yet reached its destination in Y)
+				isStuck = true;	//Might add a moveTo(__) function here that brings it back, but we would have to find out where it came from. Otherwise, just do Brain.Program.stop() here I guess.
+		} while (robotPos[1] != position[1] && !isStuck);
+		
+		//Orientates the robot to face the correct direction in X
+		if (position[0] > robotPos[0])
+			robotTurnToFace("plusX");
+		else if (position[0] < robotPos[0])
+			robotTurnToFace("minusX");
+		//Moves the robot along the X axis until it can't/doesn't need to anymore
+		do
+		{
+			bool isStuck = false;
+			if (distanceSensor.objectDistance(mm) > STOP_DISTANCE)
+			{
+				motorLeft.spin();
+				motorRight.spin();
+				hasMoved = true;
+			}
+			while (distanceSensor.objectDistance(mm) > STOP_DISTANCE && robotPos[0] != position[0])
+			{}
+			motorLeft.stop(brake);
+			motorRight.stop(brake);
+			if (robotPos[0] != position[0])	//(If it stopped, but has not yet reached its destination in X)
+			{
+				Brain.playSound(alarm2);//HONK GET OUT THE WAY
+				wait(7);
+			}
+			motorLeft.spin();
+			motorRight.spin();
+			while (distanceSensor.objectDistance(mm) > STOP_DISTANCE && robotPos[0] != position[0])
+			{}
+			motorLeft.stop(brake);
+			motorRight.stop(brake);
+			if (robotPos[0] != position[0])	//(If it stopped, but has not yet reached its destination in X)
+				isStuck = true;	//Might add a moveTo(__) function here that brings it back, but we would have to find out where it came from. Otherwise, just do Brain.Program.stop() here I guess.
+		} while (robotPos[0] != position[0] && !isStuck);		
+				
+	/*	Here's basically how the previous mess of code works.
+		I understand that this is VERY messy and gross. 
+		If you want to change the moveTo function (along with the robotTurn() function and robotTurnToFace() function) or replace it with something else entirely, that would be amazing.
+		If not, then I guess we're stuck with this lol. Pray that it works
+		We might be able to simplify the trajectory of the robot so that we won't need the moveTo Function and we'll just have a goToCouch() and goHome() function.
+			do
+			{
+				bool stuck = false;
+				Try to go along y axis
+				If it gets stuck (distance sensor), playsound(alarm2), wait 7 seconds
+				Try again
+				else, stuck = true;
 			} while (y value is not at where it needs to be AND not stuck);
 	
-			//do
+			do
 			{
-				//bool stuck = false;
-				//Try to go along x axis
-				//If it gets stuck (distance sensor), playsound(alarm2), wait 7 seconds
-				//Try again. If stuck, strafe to the right a bit, then try to go forward again.
-				//If stuck, strafe a bit to the left, then tray to go forward again.
-				//else, stuck = true;
+				bool stuck = false;
+				Try to go along x axis
+				If it gets stuck (distance sensor), playsound(alarm2), wait 7 seconds
+				Try again
+				else, stuck = true;
 			} while (x value is not at where it needs to be AND not stuck);
-			*/
 			
-			//if it truly is unsuccessful, (if it can't move the wheels for either the y axis or the x axis) siren2, wait a second, siren2, wait a second, siren2, wait a second, poweroff sound. Or we could make it try to pathfind its way back
-	//}	
-	
+			if it truly is unsuccessful, (if it can't move the wheels for either the y axis or the x axis) siren2, wait a second, siren2, wait a second, siren2, wait a second, poweroff sound. Or we could make it try to pathfind its way back
+	*/
+	}
 }
 
-void robotTurn(std::string direction) //Turns the robot either to the left or to the right RELATIVE TO ITSELF
+void robotTurn(std::string direction) //Turns the robot either to the left, to the right, or around 180 degrees RELATIVE TO ITSELF
 {
 	const double TURNING_SPEED = 20, ROTATION_ANGLE = 90;
 	
@@ -261,6 +315,21 @@ void robotTurn(std::string direction) //Turns the robot either to the left or to
 		while (BrainIntertial.rotation(degrees) > -ROTATION_ANGLE) //Might have to change the ROTATION_ANGLE and -ROTATION_ANGLE
 		{}
 	}
+	else if (direction == "around")
+	{
+		if (facing == plusX)
+			facing = minusX;
+		else if (facing == plusY)
+			facing = minusY;
+		else if (facing == minusX)
+			facing = plusX;
+		else if (facing = minusY)
+			facing = plusY;
+		motorLeft.spin(reverse, TURNING_SPEED, percent);
+		motorLeft.spin(forward, TURNING_SPEED, percent);
+		while (BrainIntertial.rotation(degrees) < 2*ROTATION_ANGLE) //Might have to change the ROTATION_ANGLE and -ROTATION_ANGLE
+		{}
+	}
 	motorLeft.stop(brake);
 		motorRight.stop(brake);
 	
@@ -272,4 +341,44 @@ void robotTurn(std::string direction) //Turns the robot either to the left or to
 		motorLeft.setPosition(-robotPos[0], mm);
 	else if (facing == "minusY")
 		motorLeft.setPosition(-robotPos[1], mm);
+}
+
+void robotTurnToFace(std::string direction)
+{
+	if (direction == "plusX")
+	{
+		if (facing == "plusY")
+			robotTurn("right");
+		else if (facing == "minusX")
+			robotTurn("around");
+		else if (facing == "minusY")
+			robotTurn("left");
+	}
+	else if (direction == "plusY")
+	{
+		if (facing == "plusX")
+			robotTurn("left");
+		else if (facing == "minusX")
+			robotTurn("right");
+		else if (facing == "minusY")
+			robutTurn("around");
+	}
+	else if (direction == "minusX")
+	{
+		if (facing == "plusX")
+			robotTurn("around");
+		else if (facing == "plusY")
+			robotTurn("left");
+		else if (facing == "minusY")
+			robotTurn("right");
+	}
+	else if (direction == "minusY")
+	{
+		if (facing == "plusX")
+			robotTurn("right");
+		else if (facing == "plusY")
+			robotTurn("around");
+		else if (facing == "minusX")
+			robotTurn("left");
+	}		
 }
