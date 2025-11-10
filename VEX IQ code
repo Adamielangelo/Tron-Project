@@ -1,4 +1,4 @@
-//Global variables
+//Global variables NO GLOBAL VARIABLES CHANGE THIS CHANGE THIS
 double couchPos[2] = {0,0};
 double homePos[2] = {0,0};
 double robotPos[2] = {0,0}
@@ -272,6 +272,8 @@ void moveTo(double position[2]) //We might be able to simplify the trajectory of
 	*/
 	}
 }
+
+// Take out the object avoidance thing 
 
 void robotTurn(std::string direction) //Turns the robot either to the left, to the right, or around 180 degrees RELATIVE TO ITSELF
 {
