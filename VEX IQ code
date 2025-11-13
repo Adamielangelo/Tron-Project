@@ -274,6 +274,60 @@ void moveTo(double position[2]) //We might be able to simplify the trajectory of
 }
 
 // Take out the object avoidance thing 
+// We might want to change how the object detection works. Maybe in the future it can return to the position when the function was called so that the robot can easily return to either the snack hub or couch.
+// If that's too complicated and we can't do Brain.Program.stop(), then maybe just have the honking thing.
+
+//The robot will stop, honk, and wait a few seconds. If the object is gone, the function ends. If not, it tries to go around it from the right.
+//If it gets stuck along the way, it sounds an alarm so that someone can come and get it. (I don't think we're allowed to Brain.Program.stop() unless it's at the end of the program unfortunately)
+void avoidObstacle()
+{
+	const int SPEED = 50; // Put in global probably
+	const float STOP_DISTANCE = 15; //Change maybe
+	const float AVOID_DISTANCE = 30;
+	
+	motorLeft.stop(brake);
+	motorRight.stop(brake);
+	
+	Brain.playSound(alarm2); //HONK GET OUT THE WAY
+	wait(7, seconds)
+	
+	if (distanceSensor.objectDistance(mm) > STOP_DISTANCE)
+	{
+		float lastEncoderVal = 0;
+		bool isStuck = false;
+		string direction = "right";
+		
+		for (int i = 0; i < 4; i++) //Should 4 be a const?
+		{
+			if (i == 0 || i == 3)
+				robotTurn("right");
+			else
+				robotTurn("left");
+			if (distanceSensor.objectDistance(mm) > STOP_DISTANCE)
+					isStuck = true;
+			if (!isStuck)
+			{
+				lastEncoderVal = motorLeft.position(mm);
+				motorLeft.spin(SPEED);
+				motorRight.spin(SPEED);
+				while (motorLeft.position(mm) - lastEncoderVal < AVOID_DISTANCE)
+				{}
+				motorLeft.stop(brake);
+				motorRight.stop(brake);
+			}
+			else 
+			{
+				for (int i = 0; i < 5; i++)
+				{
+					Brain.playSound(siren2);
+					wait(3, seconds);
+				}
+			}
+		}
+	}
+}
+
+
 
 void robotTurn(std::string direction) //Turns the robot either to the left, to the right, or around 180 degrees RELATIVE TO ITSELF
 {
@@ -385,54 +439,3 @@ void robotTurnToFace(std::string direction)
 	}		
 }
 
-
-
-//The robot will stop, honk, and wait a few seconds. If the object is gone, the function ends. If not, it tries to go around it from the right.
-//If it gets stuck along the way, it sounds an alarm so that someone can come and get it. (I don't think we're allowed to Brain.Program.stop() unless it's at the end of the program unfortunately)
-void avoidObstacle()
-{
-	const int SPEED = 50; // Put in global probably
-	const float STOP_DISTANCE = 15; //Change maybe
-	const float AVOID_DISTANCE = 30;
-	
-	motorLeft.stop(brake);
-	motorRight.stop(brake);
-	
-	Brain.playSound(alarm2); //HONK GET OUT THE WAY
-	wait(7, seconds)
-	
-	if (distanceSensor.objectDistance(mm) > STOP_DISTANCE)
-	{
-		float lastEncoderVal = 0;
-		bool isStuck = false;
-		string direction = "right";
-		
-		for (int i = 0; i < 4; i++) //Should 4 be a const?
-		{
-			if (i == 0 || i == 3)
-				robotTurn("right");
-			else
-				robotTurn("left");
-			if (distanceSensor.objectDistance(mm) > STOP_DISTANCE)
-					isStuck = true;
-			if (!isStuck)
-			{
-				lastEncoderVal = motorLeft.position(mm);
-				motorLeft.spin(SPEED);
-				motorRight.spin(SPEED);
-				while (motorLeft.position(mm) - lastEncoderVal < AVOID_DISTANCE)
-				{}
-				motorLeft.stop(brake);
-				motorRight.stop(brake);
-			}
-			else 
-			{
-				for (int i = 0; i < 5; i++)
-				{
-					Brain.playSound(siren2);
-					wait(3, seconds);
-				}
-			}
-		}
-	}
-}
