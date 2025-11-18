@@ -4,6 +4,9 @@
 - i think the updateRobotPos() function itself might also be flawed or maybe i just don't understand it
     - like i think it might be updating robotPos[Y] (Y value) even when it is facing/moving the X direction??
     
+- the returning to couch after avoidObstacle returns false can become an infinite loop.... 
+- i also hardcoded the thing to have targetPosition = 0, change that if you want.
+
 TLDR: i think updateRobotPos() updates the Y value even when moving in or facing the X directions, maybe check that
 */
 
@@ -42,6 +45,7 @@ void moveTo(double targetPos, std::string& facing, double robotPos[2]) {
 			MotorRight.stop();
 
 			bool cont = avoidObstacle(facing, robotPos); //THE AVOID FUNCTION IS HERE~!!!!!!!!!
+			
 			if (cont) { //moved around object
 			    MotorLeft.spin(forward, SPEED, percent);
 	            MotorRight.spin(forward, SPEED, percent);
@@ -61,17 +65,23 @@ void moveTo(double targetPos, std::string& facing, double robotPos[2]) {
 	while (std::abs(targetPos - currentPos) > FINAL_TOLERANCE) {
 		updateRobotPos(facing, robotPos);
 		currentPos = robotPos[Y];
-		
-		bool cont = avoidObstacle(facing, robotPos); //THE AVOID FUNCTION IS HERE~!!!!!!!!!
-			if (cont) { //moved around object
-			    MotorLeft.spin(forward, SPEED*0.5, percent);
-	            MotorRight.spin(forward, SPEED*0.5, percent);
-	            updateRobotPos(facing, robotPos);
-		        currentPos = robotPos[Y];
-			} else { //object still there, return to starting position
-			    moveTo(0, facing, robotPos); //strict value of 0 is the couch position
-			    return;
-			}
+        
+        if (Distance2.objectDistance(mm) < SAFE_DISTANCE) {
+			MotorLeft.stop();
+			MotorRight.stop();	
+			
+    		bool cont = avoidObstacle(facing, robotPos); //THE AVOID FUNCTION IS HERE~!!!!!!!!!
+    		
+    		if (cont) { //moved around object
+    		    MotorLeft.spin(forward, SPEED*0.5, percent);
+                MotorRight.spin(forward, SPEED*0.5, percent);
+                updateRobotPos(facing, robotPos);
+    	        currentPos = robotPos[Y];
+    		} else { //object still there, return to starting position
+    		    moveTo(0, facing, robotPos); //strict value of 0 is the couch position
+    		    return;
+    		}
+        }
 	}
 	
 	//arrived at final destination
