@@ -1,0 +1,80 @@
+//weird errors i noticed
+/*
+- updateRobotPos() -> check if i am passing into this correctly
+- i think the updateRobotPos() function itself might also be flawed or maybe i just don't understand it
+    - like i think it might be updating robotPos[Y] (Y value) even when it is facing/moving the X direction??
+    
+TLDR: i think updateRobotPos() updates the Y value even when moving in or facing the X directions, maybe check that
+*/
+
+
+void moveTo(double targetPos, std::string& facing, double robotPos[2]) {
+	const double APPROACH_TOLERANCE = 400;
+	const double FINAL_TOLERANCE = 200;
+	const double SAFE_DISTANCE = 120;
+
+	updateRobotPos(facing, robotPos); //get robot position
+	double currentPos = robotPos[Y]; // use the Y-value (only travelling on one axis)
+	double moveDistance = targetPos - currentPos;
+
+	//determining which direction to move
+	bool towardsCouch = (moveDistance > 0);
+
+	if (towardsCouch) {
+		robotTurnToFace(minusY, facing, robotPos);
+	} else {
+		robotTurnToFace(plusY, facing, robotPos);
+	}
+	
+	
+	//reset current position value before starting to drive
+	currentPos = robotPos[Y];
+
+	//drive fast until APPROACH_TOLERANCE
+	MotorLeft.spin(forward, SPEED, percent);
+	MotorRight.spin(forward, SPEED, percent);
+	while (std::abs(targetPos - currentPos) > APPROACH_TOLERANCE) {
+		updateRobotPos(facing, robotPos);
+		currentPos = robotPos[Y];
+
+		if (Distance2.objectDistance(mm) < SAFE_DISTANCE) {
+			MotorLeft.stop();
+			MotorRight.stop();
+
+			bool cont = avoidObstacle(facing, robotPos); //THE AVOID FUNCTION IS HERE~!!!!!!!!!
+			if (cont) { //moved around object
+			    MotorLeft.spin(forward, SPEED, percent);
+	            MotorRight.spin(forward, SPEED, percent);
+	            updateRobotPos(facing, robotPos);
+		        currentPos = robotPos[Y];
+			} else { //object still there, return to starting position
+			    moveTo(0, facing, robotPos); //strict value of 0 is the couch position
+			    return;
+			}
+		}
+	}
+	
+	//drive slow util FINAL_TOLERANCE
+	MotorLeft.spin(forward, SPEED*0.5, percent);
+	MotorRight.spin(forward, SPEED*0.5, percent);
+
+	while (std::abs(targetPos - currentPos) > FINAL_TOLERANCE) {
+		updateRobotPos(facing, robotPos);
+		currentPos = robotPos[Y];
+		
+		bool cont = avoidObstacle(facing, robotPos); //THE AVOID FUNCTION IS HERE~!!!!!!!!!
+			if (cont) { //moved around object
+			    MotorLeft.spin(forward, SPEED*0.5, percent);
+	            MotorRight.spin(forward, SPEED*0.5, percent);
+	            updateRobotPos(facing, robotPos);
+		        currentPos = robotPos[Y];
+			} else { //object still there, return to starting position
+			    moveTo(0, facing, robotPos); //strict value of 0 is the couch position
+			    return;
+			}
+	}
+	
+	//arrived at final destination
+    MotorLeft.stop(brake);
+    MotorRight.stop(brake);
+}
