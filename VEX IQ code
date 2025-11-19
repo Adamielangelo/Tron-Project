@@ -28,10 +28,10 @@ brain Brain;
 
 // Robot configuration code.
 inertial BrainInertial = inertial();
-motor MotorLeft = motor(PORT4, false);
-motor MotorRight = motor(PORT5, true);
-motor MotorGrab = motor(PORT3, false); //WHAT DOES FALSE DO? I put false bc I didn't know what to put lol
-motor MotorVert = motor(PORT1);
+motor MotorLeft = motor(PORT3, false);
+motor MotorRight = motor(PORT4, true);
+motor MotorGrab = motor(PORT5, false);
+motor MotorVert = motor(PORT1, true);
 optical Optical6 = optical(PORT6);
 distance Distance2 = distance(PORT2);
 touchled TouchLED12 = touchled(PORT12);
@@ -141,18 +141,27 @@ void waitForTouch();
 void findCouch(double couchPos[2], double robotPos[2], std::string& facing);
 void menuSelect(std::string order[], bool& endProgram);
 bool confirm(const std::string chipString);
-void getSnack(std::string snack);
+//void getSnack(std::string snack);
 void moveTo(double position[2], std::string& facing);
 bool avoidObstacle(std::string facing, double robotPos[2]);
 void updateRobotPos(std::string& facing, double robotPos[2]);
 void robotTurn(std::string direction, std::string& facing, double robotPos[2]);
 void robotTurnToFace(std::string direction, std::string& facing, double robotPos[2]);
+void getSnack(std::string order[2], std::string& facing, double robotPos[2]);
+void nextChip(std::string colour, std::string& facing, double robotPos[2]);
+void dropBasket();
 
 const int X = 0, Y = 1;
 const double WHEEL_CIRC = 200;
 const double ROBOT_LENGTH = 250; //Not actually the length of the robot, just from the centre of the first wheels to the end. And it's approximate
 const int NUM_ORDERS = 2;
 const int SPEED = 40; //TORQUE IS AN ISSUE FOR MOVING THE WHEELS. Might need to use gears. Will probably need it too for the elevator :,/
+const int GRAB_SPEED = 10;
+const double CHIP_DISTANCE = 150;
+const double DISTANCE_FROM_BACK_OF_RACK = 160;
+const double VERT_MOTOR_DEGREES = 2000;
+const double CLAW_MOTOR_DEGREES = 100;
+const double HOLD_CHIPS = 5;
 
 int main()
 {
@@ -170,10 +179,21 @@ int main()
 
 	while(!endProgram)
 	{	//The robot gets placed at the snack stand. Make sure it can see the first snack option in the line.
-		
-		waitForTouch();
-    
 
+
+    
+    std::string tempArr[2] = {"Sun Chips", "Cooler Soda"};
+    getSnack(tempArr, facing, robotPos);
+
+    /*while(true)
+    {
+      Brain.Screen.clearScreen();
+      Brain.Screen.setCursor(1,1);
+      Brain.Screen.print("%s", convertColorToString(Optical6.color()));
+      wait(3, seconds);
+    }*/
+      
+   
 
     endProgram = true; //Delete this once done testing
 
@@ -221,7 +241,7 @@ void findCouch(double couchPos[2], double robotPos[2], std::string& facing)
 	MotorLeft.spin(forward, SPEED, percent);
 	MotorRight.spin(forward, SPEED, percent);
 	while (Distance2.objectDistance(mm) > NEAR_COUCH)
-	{Brain.Screen.clearScreen(); Brain.Screen.setCursor(1,1); Brain.Screen.print("%f" ,Distance2.objectDistance(mm)); Brain.Screen.newLine(); Brain.Screen.print("%d", static_cast<int>(Distance2.objectDistance(mm) > NEAR_COUCH));}
+	{Brain.Screen.clearScreen(); Brain.Screen.setCursor(1,1); Brain.Screen.print("%f",Distance2.objectDistance(mm)); Brain.Screen.newLine(); Brain.Screen.print("%d", static_cast<int>(Distance2.objectDistance(mm) > NEAR_COUCH));}
 	MotorLeft.stop(brake);
 	MotorRight.stop(brake);
 	couchPos[X] = 0;
@@ -347,48 +367,148 @@ bool confirm(const std::string chipString)
 	}
 }
 
-void getSnack(std::string snack)	//The robot will go get the snack, pick it up, and put it in a basket //GETTING REDONE AND REPLACED BY ISABEL
+void getSnack(std::string order[NUM_ORDERS], std::string& facing, double robotPos[2])
 {
-	const double CLAW_LENGTH_PLUS_5_MM = 90; //CHANGE ONCE WE MEASURE IT
-	std::string searchColour = "Nothing";
-	if (snack == "Fanta")
-		searchColour = "orange";
-	else if (snack == "Coca Cola")
-		searchColour = "red";
-	else if (snack == "Pepsi")
-		searchColour = blue;
-	else if (snack == "Sprite")
-		searchColour = green;
-	
-	//The distance sensor and the Optical6 sensor have to be like right on top of the other for this to work, which both have to be like right on top of the claw
-	MotorLeft.spin(forward,10,percent);
-	MotorRight.spin(forward,10,percent);
-	while (Distance2.objectDistance(mm) > CLAW_LENGTH_PLUS_5_MM)
-	{}
-	MotorLeft.stop(brake);
-	MotorRight.stop(brake);
-	
-	bool snackFound = false;
-	{
-		if (Optical6.color() != red/*Or any of the other colours of the snacks*/){
-		//Adjust the robot's position a little bit to the left/right and try again
-		//If we need to, try it again with the light on
-		}
-		
-		if (convertColorToString(Optical6.color()) == searchColour)
-		{
-			//Grab the snack and put in basket
-			snackFound = true;
-			//Move back to (0,0) (home);
-		}
-		else
-		{
-			//Move SNACK_SEPARATION_DISTANCE to the right
-			//Unless it's out of options. Then return to (0,0)
-		}
-	}
+  //commented out line 409 and added a sunchip option
+  for (int i = 0; i < 2; i++)
+  {
+    //reading the chip bag orders in array
+   // std::string colour = order[i];
+   std::string colour= "Sun Chips"; //DELETE LATER
+
+
+    //if there is only one order, ensures it only fulfils one order
+    if (colour != "Nothing")
+    {
+      //use motor encoders here
+      MotorVert.spin(forward, SPEED, percent);
+      //needs to be tested
+      while(MotorVert.position(degrees) < VERT_MOTOR_DEGREES) //Needs to be changed and tested
+      {}
+      MotorVert.stop(brake);
+     
+      //open claw
+      //change to motor encoders
+      MotorGrab.spin(forward, GRAB_SPEED, percent);
+      while (MotorGrab.position(degrees) < CLAW_MOTOR_DEGREES)
+      {}
+      MotorGrab.stop();
+
+
+
+
+      //for 3 chip types CHANGE WHEN WE GET OPTIONS, Also make this a const int variable
+      for (int p = 0; p < 3; p++)
+     {
+       //drive fwd until close enough to chip bag
+       MotorLeft.spin(forward, SPEED, percent);
+       MotorRight.spin(forward, SPEED, percent);
+
+      
+       while(Distance2.objectDistance(mm) > DISTANCE_FROM_BACK_OF_RACK) //CHANGE POSSIBLY WHEN WE GET SNACK RACK SET UP. Maybe get the distance and put it in each subsequent one
+       {}
+       MotorLeft.stop();
+       MotorRight.stop();
+
+        wait(1, seconds);
+        //The if statement needs to be really long because the colour sensor is not very accurate. Normally, we would just compare the colour from the sensor to the colour of the chip bag,
+        //but we instead have to check for similar colours
+
+        Brain.Screen.print(convertColorToString(Optical6.color()));
+
+        if ((colour == "Sun Chips") && (convertColorToString(Optical6.color()) == "red" || convertColorToString(Optical6.color()) == "orange") /*|| do the rest of the colours*/)
+        {
+          MotorGrab.spin(reverse, GRAB_SPEED, percent);
+          MotorGrab.spin(reverse, HOLD_CHIPS, percent);
+          wait(3, seconds);
+          
+          //reverse bot
+          MotorRight.setPosition(0, turns);
+          MotorLeft.spin(reverse,SPEED,percent);
+          MotorRight.spin(reverse,SPEED,percent);
+          while (MotorRight.position(turns) > -2)
+          {}
+          MotorLeft.stop(brake);
+          MotorRight.stop(brake);
+       
+         //carry first snack in basket, second snack is still held in claw
+         if (i == 0)
+         {
+          //drop into basket
+          dropBasket();
+
+          robotTurn("left", facing, robotPos);
+          MotorLeft.spin(forward, SPEED, percent);
+          MotorRight.spin(forward, SPEED, percent);
+          MotorRight.setPosition(0, turns);
+          while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE * (p - 1));
+          {}
+          MotorLeft.stop();
+          MotorRight.stop();
+          //ADD THIS: move backwards, turn to the left, move normalMoveDistance * (p - 1), then turn back towards the \mathrm{Snack\;Rack^{TM}}
+
+          //break out of for loop
+          //change to constant for legibility
+          p = 4;
+         }
+        }
+        else
+        {
+          //call function
+          nextChip(colour, facing, robotPos);
+        }
+      }  
+    }
+  }
 }
 
+
+void nextChip(std::string colour, std::string& facing, double robotPos[2])
+{
+  
+  //reverse
+  MotorLeft.spin(reverse, SPEED, percent);
+  MotorRight.spin(reverse, SPEED, percent);
+  MotorRight.setPosition(0, turns);
+  while(MotorRight.position(turns) > -2) // CHANGE DISTANCE LIKE SAID BEFORE
+  {}
+  MotorLeft.stop();
+  MotorRight.stop();
+  
+  //turn right
+  robotTurn("right", facing, robotPos);
+  MotorRight.setPosition(0, turns);
+
+  MotorLeft.spin(forward, SPEED, percent);
+  MotorRight.spin(forward, SPEED, percent);
+  while(MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE)
+  {}
+  MotorLeft.stop(brake);
+  MotorRight.stop(brake);
+
+
+  robotTurn("left", facing, robotPos);
+  
+}
+
+
+void dropBasket()
+{
+  //lower elevator
+  MotorVert.spin(reverse, SPEED, percent);
+  while(MotorVert.position(degrees) > 0)
+  {}
+  MotorVert.stop(brake);
+
+
+  //open claw
+  MotorGrab.spin(forward, GRAB_SPEED, percent);
+  wait (3, seconds);
+  MotorGrab.stop(brake);
+}
+
+
+/*
 //NEEDS TESTING
 void moveTo(double targetPos, std::string& facing, double robotPos[2]) {  //moves along **the Y axis**
 	const double APPROACH_TOLERANCE = 400; //Had to change the distances. Millimetres are surprisingly really small lol. I spent like an hour debugging something that's only issue was the distance not being big enough
@@ -408,8 +528,8 @@ void moveTo(double targetPos, std::string& facing, double robotPos[2]) {  //move
 	
 	//driving fast until APPROACH_TOLERANCE
     //drive forwards at a medium/fast speed
-	MotorLeft.spin(forward, SPEED, percent); //This good, Arthur? I'm putting SPEED in the regular one, and then 0.5 * SPEED for the slow one
-	MotorRight.spin(forward, SPEED, percent);
+	MotorLeft.spin(forward, SPEED, percent); 
+  MotorRight.spin(forward, SPEED, percent);
 	while (std::abs(targetPos - currentPos) > APPROACH_TOLERANCE)
   {
 		if (Distance2.objectDistance(mm) < SAFE_DISTANCE) //not safe! object in front
@@ -437,7 +557,7 @@ void moveTo(double targetPos, std::string& facing, double robotPos[2]) {  //move
 
   //If, at the avoid function, it returns false, skip everything up until this point and call the function again to the original position
 }
-
+*/
 //NEEDS TESTING
 bool avoidObstacle(std::string facing, double robotPos[2])
 {
