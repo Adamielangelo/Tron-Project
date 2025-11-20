@@ -217,12 +217,14 @@ int main()
     findCouch(couchPos, robotPos); // give couchPos a positive value
     wait(5, seconds);
     
+    /*
     while (!endProgram)
     {
        // moveTo(snackPos, robotPos, couchPos);
         endProgram = true;
     }
     
+    */
     Brain.programStop();
 }
 
@@ -273,7 +275,7 @@ void findCouch(double &couchPos, double &robotPos)
         Brain.Screen.newLine();
         Brain.Screen.print("touchLED when you want a snack!");
     */
-    Brain.Screen.print("%d", robotPos); 
+    Brain.Screen.print("%f", robotPos); 
 }
 
 void menuSelect(std::string order[NUM_ORDERS], bool &endProgram)
