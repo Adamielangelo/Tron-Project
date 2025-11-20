@@ -6,7 +6,6 @@
 #include <math.h>
 #include <string.h>
 
-
 #include "vex.h"
 
 using namespace vex;
@@ -14,17 +13,16 @@ using namespace vex;
 // Brain should be defined by default
 brain Brain;
 
-
 // START IQ MACROS
-#define waitUntil(condition)                                                   \
-  do {                                                                         \
-    wait(5, msec);                                                             \
-  } while (!(condition))
+#define waitUntil(condition) \
+    do                       \
+    {                        \
+        wait(5, msec);       \
+    } while (!(condition))
 
-#define repeat(iterations)                                                     \
-  for (int iterator = 0; iterator < iterations; iterator++)
+#define repeat(iterations) \
+    for (int iterator = 0; iterator < iterations; iterator++)
 // END IQ MACROS
-
 
 // Robot configuration code.
 inertial BrainInertial = inertial();
@@ -36,84 +34,122 @@ optical Optical6 = optical(PORT6);
 distance Distance2 = distance(PORT2);
 touchled TouchLED12 = touchled(PORT12);
 
-
 // generating and setting random seed
-void initializeRandomSeed(){
-  wait(100,msec);
-  double xAxis = BrainInertial.acceleration(xaxis) * 1000;
-  double yAxis = BrainInertial.acceleration(yaxis) * 1000;
-  double zAxis = BrainInertial.acceleration(zaxis) * 1000;
-  // Combine these values into a single integer
-  int seed = int(
-    xAxis + yAxis + zAxis
-  );
-  // Set the seed
-  srand(seed); 
+void initializeRandomSeed()
+{
+    wait(100, msec);
+    double xAxis = BrainInertial.acceleration(xaxis) * 1000;
+    double yAxis = BrainInertial.acceleration(yaxis) * 1000;
+    double zAxis = BrainInertial.acceleration(zaxis) * 1000;
+    // Combine these values into a single integer
+    int seed = int(
+        xAxis + yAxis + zAxis);
+    // Set the seed
+    srand(seed);
 }
 
 // Converts a color to a string
-const char* convertColorToString(color col) {
-  if (col == colorType::red) return "red";
-  else if (col == colorType::green) return "green";
-  else if (col == colorType::blue) return "blue";
-  else if (col == colorType::white) return "white";
-  else if (col == colorType::yellow) return "yellow";
-  else if (col == colorType::orange) return "orange";
-  else if (col == colorType::purple) return "purple";
-  else if (col == colorType::cyan) return "cyan";
-  else if (col == colorType::black) return "black";
-  else if (col == colorType::transparent) return "transparent";
-  else if (col == colorType::red_violet) return "red_violet";
-  else if (col == colorType::violet) return "violet";
-  else if (col == colorType::blue_violet) return "blue_violet";
-  else if (col == colorType::blue_green) return "blue_green";
-  else if (col == colorType::yellow_green) return "yellow_green";
-  else if (col == colorType::yellow_orange) return "yellow_orange";
-  else if (col == colorType::red_orange) return "red_orange";
-  else if (col == colorType::none) return "none";
-  else return "unknown";
+const char *convertColorToString(color col)
+{
+    if (col == colorType::red)
+        return "red";
+    else if (col == colorType::green)
+        return "green";
+    else if (col == colorType::blue)
+        return "blue";
+    else if (col == colorType::white)
+        return "white";
+    else if (col == colorType::yellow)
+        return "yellow";
+    else if (col == colorType::orange)
+        return "orange";
+    else if (col == colorType::purple)
+        return "purple";
+    else if (col == colorType::cyan)
+        return "cyan";
+    else if (col == colorType::black)
+        return "black";
+    else if (col == colorType::transparent)
+        return "transparent";
+    else if (col == colorType::red_violet)
+        return "red_violet";
+    else if (col == colorType::violet)
+        return "violet";
+    else if (col == colorType::blue_violet)
+        return "blue_violet";
+    else if (col == colorType::blue_green)
+        return "blue_green";
+    else if (col == colorType::yellow_green)
+        return "yellow_green";
+    else if (col == colorType::yellow_orange)
+        return "yellow_orange";
+    else if (col == colorType::red_orange)
+        return "red_orange";
+    else if (col == colorType::none)
+        return "none";
+    else
+        return "unknown";
 }
-
 
 // Convert colorType to string
-const char* convertColorToString(colorType col) {
-  if (col == colorType::red) return "red";
-  else if (col == colorType::green) return "green";
-  else if (col == colorType::blue) return "blue";
-  else if (col == colorType::white) return "white";
-  else if (col == colorType::yellow) return "yellow";
-  else if (col == colorType::orange) return "orange";
-  else if (col == colorType::purple) return "purple";
-  else if (col == colorType::cyan) return "cyan";
-  else if (col == colorType::black) return "black";
-  else if (col == colorType::transparent) return "transparent";
-  else if (col == colorType::red_violet) return "red_violet";
-  else if (col == colorType::violet) return "violet";
-  else if (col == colorType::blue_violet) return "blue_violet";
-  else if (col == colorType::blue_green) return "blue_green";
-  else if (col == colorType::yellow_green) return "yellow_green";
-  else if (col == colorType::yellow_orange) return "yellow_orange";
-  else if (col == colorType::red_orange) return "red_orange";
-  else if (col == colorType::none) return "none";
-  else return "unknown";
+const char *convertColorToString(colorType col)
+{
+    if (col == colorType::red)
+        return "red";
+    else if (col == colorType::green)
+        return "green";
+    else if (col == colorType::blue)
+        return "blue";
+    else if (col == colorType::white)
+        return "white";
+    else if (col == colorType::yellow)
+        return "yellow";
+    else if (col == colorType::orange)
+        return "orange";
+    else if (col == colorType::purple)
+        return "purple";
+    else if (col == colorType::cyan)
+        return "cyan";
+    else if (col == colorType::black)
+        return "black";
+    else if (col == colorType::transparent)
+        return "transparent";
+    else if (col == colorType::red_violet)
+        return "red_violet";
+    else if (col == colorType::violet)
+        return "violet";
+    else if (col == colorType::blue_violet)
+        return "blue_violet";
+    else if (col == colorType::blue_green)
+        return "blue_green";
+    else if (col == colorType::yellow_green)
+        return "yellow_green";
+    else if (col == colorType::yellow_orange)
+        return "yellow_orange";
+    else if (col == colorType::red_orange)
+        return "red_orange";
+    else if (col == colorType::none)
+        return "none";
+    else
+        return "unknown";
 }
 
+void vexcodeInit()
+{
 
-void vexcodeInit() {
-
-  // Initializing random seed.
-  initializeRandomSeed(); 
+    // Initializing random seed.
+    initializeRandomSeed();
 }
 
 #pragma endregion VEXcode Generated Robot Configuration
 
 //----------------------------------------------------------------------------
-//                                                                            
-//    Module:       main.cpp                                                  
-//    Authors:       Adam, Arthur, Isabel, and Arjun                                                  
-//    Created:      {date}                                                    
-//    Description:  IQ project                                                
-//                                                                            
+//
+//    Module:       main.cpp
+//    Authors:       Adam, Arthur, Isabel, and Arjun
+//    Created:      {date}
+//    Description:  IQ project
+//
 //----------------------------------------------------------------------------
 
 // Include the IQ Library
@@ -126,35 +162,35 @@ using namespace vex;
 
 void configureAllSensors()
 {
-  BrainInertial.calibrate();
-  wait(2,seconds);
-  BrainInertial.setHeading(0,degrees);
-  BrainInertial.setRotation(0,degrees);
-  MotorLeft.setPosition(0,turns);
-  MotorRight.setPosition(0,turns);
-  Brain.Screen.clearScreen();
-  Brain.Screen.setFont(mono15);
-  Optical6.setLight(ledState::on);
+    BrainInertial.calibrate();
+    wait(2, seconds);
+    BrainInertial.setHeading(0, degrees);
+    BrainInertial.setRotation(0, degrees);
+    MotorLeft.setPosition(0, turns);
+    MotorRight.setPosition(0, turns);
+    Brain.Screen.clearScreen();
+    Brain.Screen.setFont(mono15);
+    Optical6.setLight(ledState::on);
 }
 
-//Function prototypes
+// Function prototypes
 void waitForTouch();
-void findCouch(double couchPos, double& robotPos);
-void menuSelect(std::string order[], bool& endProgram);
+void findCouch(double couchPos, double &robotPos);
+void menuSelect(std::string order[], bool &endProgram);
 bool confirm(const std::string chipString);
-void moveTo(double targetPos, double& robotPos, double couchPos);
-bool avoidObstacle();
-void updateRobotPos(double& robotPos);
-void robotTurn(std::string direction, double& robotPos);
-void robotTurnToFace(std::string direction, double& robotPos);
-void getSnack(std::string order[2], double& robotPos);
-void nextChip(std::string colour, double& robotPos);
+void moveTo(double targetPos, double &robotPos, double couchPos);
+bool obstacleAlarm();
+void updateRobotPos(double &robotPos);
+void robotTurn(std::string direction, double &robotPos);
+void robotTurnToFace(std::string direction, double &robotPos);
+void getSnack(std::string order[2], double &robotPos);
+void nextChip(std::string colour, double &robotPos);
 void dropBasket();
 
 const double WHEEL_CIRC = 200;
-const double ROBOT_LENGTH = 250; //Not actually the length of the robot, just from the centre of the first wheels to the end. And it's approximate
+const double ROBOT_LENGTH = 250; // Not actually the length of the robot, just from the centre of the first wheels to the end. And it's approximate
 const int NUM_ORDERS = 2;
-const int SPEED = 40; //TORQUE IS AN ISSUE FOR MOVING THE WHEELS. Might need to use gears. Will probably need it too for the elevator :,/
+const int SPEED = 40; // TORQUE IS AN ISSUE FOR MOVING THE WHEELS. Might need to use gears. Will probably need it too for the elevator :,/
 const int GRAB_SPEED = 10;
 const double CHIP_DISTANCE = 220;
 const double LONG_CHIP_DISTANCE = 500;
@@ -167,382 +203,397 @@ const double CHIP_DISTANCE_CORRECTION_FACTOR = 50;
 
 int main()
 {
-  // Initializing Robot Configuration. DO NOT REMOVE!
-  vexcodeInit();
-  // Begin project code
-	configureAllSensors();
+    // Initializing Robot Configuration. DO NOT REMOVE!
+    vexcodeInit();
+    // Begin project code
+    configureAllSensors();
 
-  double couchPos = 0;
-  double homePos = 0;
-  double robotPos = 0;
-  std::string snackSelection[NUM_ORDERS] = {""};
-	bool endProgram = false;
+    double couchPos = 0;
+    double homePos = 0;
+    double robotPos = 0;
+    std::string snackSelection[NUM_ORDERS] = {""};
+    bool endProgram = false;
 
-	while(!endProgram)
-	{	//The robot gets placed at the snack stand. Make sure it can see the first snack option in the line.
+    while (!endProgram)
+    { // The robot gets placed at the snack stand. Make sure it can see the first snack option in the line.
 
-    //For debugging purposes, delete later
-   /* MotorLeft.spin(forward, SPEED, percent);
-    MotorRight.spin(forward, SPEED, percent);
-    while(true)
-    {
-      Brain.Screen.clearScreen();
-      Brain.Screen.setCursor(1,1);
-      //Check colour
-      //Brain.Screen.print("%s", convertColorToString(Optical6.color()));
+        // For debugging purposes, delete later
+        /* MotorLeft.spin(forward, SPEED, percent);
+         MotorRight.spin(forward, SPEED, percent);
+         while(true)
+         {
+           Brain.Screen.clearScreen();
+           Brain.Screen.setCursor(1,1);
+           //Check colour
+           //Brain.Screen.print("%s", convertColorToString(Optical6.color()));
 
-      //Check hue
-      //Brain.Screen.print("%f", Optical6.hue());
+           //Check hue
+           //Brain.Screen.print("%f", Optical6.hue());
 
-      //Check distance
-      /*Brain.Screen.print("%f", Distance2.objectDistance(mm));
-      if (Distance2.objectDistance(mm) < DISTANCE_FROM_BACK_OF_RACK)
-        {
-          Brain.playSound(alarm);
-          MotorLeft.stop(brake);
-          MotorRight.stop(brake);
-          wait(2, seconds);
-          MotorLeft.spin(forward, SPEED, percent);
-          MotorRight.spin(forward, SPEED, percent);
-        }
-      wait(50, msec);
-    }*/
+           //Check distance
+           /*Brain.Screen.print("%f", Distance2.objectDistance(mm));
+           if (Distance2.objectDistance(mm) < DISTANCE_FROM_BACK_OF_RACK)
+             {
+               Brain.playSound(alarm);
+               MotorLeft.stop(brake);
+               MotorRight.stop(brake);
+               wait(2, seconds);
+               MotorLeft.spin(forward, SPEED, percent);
+               MotorRight.spin(forward, SPEED, percent);
+             }
+           wait(50, msec);
+         }*/
 
-    findCouch(couchPos, robotPos);
-    wait(5, seconds);
-    moveTo(homePos, robotPos, couchPos);
+        findCouch(couchPos, robotPos);
+        wait(5, seconds);
+        moveTo(homePos, robotPos, couchPos);
 
-    endProgram = true; //Delete this once done testing
+        endProgram = true; // Delete this once done testing
 
-    /*waitForTouch();
-    BrainInertial.setRotation(0, degrees);
-		findCouch(couchPos, robotPos);
-		waitForTouch();
+        /*waitForTouch();
+        BrainInertial.setRotation(0, degrees);
+            findCouch(couchPos, robotPos);
+            waitForTouch();
 
-    for (int i = 0; i < NUM_ORDERS; i++)
-      snackSelection[i] = "Nothing";
-		menuSelect(snackSelection, endProgram);
-		
-		robotTurn("around", robotPos);
-		moveTo(homePos);
-		for (int i = 0; i < NUM_ORDERS; i++)
-		{
-			getSnack(snackSelection[i]);
-		}
-		moveTo(couchPos);
-    //Stop claw motor if you haven't already so that it'll open easily
-		Brain.playSound(tada);*/
-	}
-  Brain.programStop();
+        for (int i = 0; i < NUM_ORDERS; i++)
+          snackSelection[i] = "Nothing";
+            menuSelect(snackSelection, endProgram);
+
+            robotTurn("around", robotPos);
+            moveTo(homePos);
+            for (int i = 0; i < NUM_ORDERS; i++)
+            {
+                getSnack(snackSelection[i]);
+            }
+            moveTo(couchPos);
+        //Stop claw motor if you haven't already so that it'll open easily
+            Brain.playSound(tada);*/
+    }
+    Brain.programStop();
 }
 
 void waitForTouch()
 {
-	while (!TouchLED12.pressing())
-	{}
-	while (TouchLED12.pressing())
-	{}
-}
-
-void findCouch(double couchPos, double& robotPos)
-{
-	const int NEAR_COUCH = 240; //Distance between the distance sensor and the couch
-	
-  MotorLeft.setPosition(0, turns);
-  
-  MotorLeft.spin(reverse, SPEED, percent);
-  MotorRight.spin(reverse, SPEED, percent);
-  while (MotorLeft.position(turns) * WHEEL_CIRC > -ROBOT_LENGTH)
-  {}
-  MotorLeft.stop(brake);
-  MotorRight.stop(brake);
-
-  robotTurn("around", robotPos);
-
-	MotorLeft.spin(forward, SPEED, percent);
-	MotorRight.spin(forward, SPEED, percent);
-	while (Distance2.objectDistance(mm) > NEAR_COUCH)
-  {}
-	MotorLeft.stop(brake);
-	MotorRight.stop(brake);
-	couchPos = MotorLeft.position(turns);
-	
-  robotTurn("around", robotPos);
-
-	Brain.Screen.setCursor(1,1);
-	//Brain.playSound(tada); BRING BACK LATER. Just made silent for now. Don't want to bother others while testing. NOTENOTE
-	Brain.Screen.print("Hello! I am here ");
-  Brain.Screen.newLine();
-  Brain.Screen.print("to serve you. Press the");
-  Brain.Screen.newLine();
-  Brain.Screen.print("touchLED when you want a snack!");
-}
-
-void menuSelect(std::string order[NUM_ORDERS], bool& endProgram)
-{
-  const int NUM_OPTIONS = 6;
-	bool doneOrdering = false;
-  bool snackSelected = false;
-
-	for (int i = 0; (i < NUM_ORDERS) && (!doneOrdering) && (!endProgram); i++)
-	{
-		Brain.Screen.clearScreen();
-		Brain.Screen.setCursor(1,1);
-		Brain.Screen.print("  What snack?");
-    Brain.Screen.newLine();
-    Brain.Screen.print("  Doritos");
-    Brain.Screen.newLine();
-    Brain.Screen.print("  Cheetos");
-    Brain.Screen.newLine();
-    Brain.Screen.print("  Ruffles");
-    Brain.Screen.newLine();
-    Brain.Screen.print("  Done");
-    Brain.Screen.newLine();
-    Brain.Screen.print("  End Program");
-		Brain.Screen.setCursor(2,1);
-		Brain.Screen.print(">");
-    
-    snackSelected = false;
-    while(!snackSelected)
+    while (!TouchLED12.pressing())
     {
-      std::string buttonPressed = "";
-      while (!Brain.buttonLeft.pressing() && !Brain.buttonRight.pressing() && !Brain.buttonCheck.pressing())
-	  	{}
-      if (Brain.buttonLeft.pressing())
-        buttonPressed = "left";
-      if (Brain.buttonRight.pressing())
-        buttonPressed = "right";
-      if (Brain.buttonCheck.pressing())
-        buttonPressed = "check";
-      while (Brain.buttonLeft.pressing() || Brain.buttonRight.pressing() || Brain.buttonCheck.pressing())
-	  	{}
-	  	if(buttonPressed == "left")
-	  	{
-	  		if (Brain.Screen.row() > 2)
-	  		{
-    			Brain.Screen.setCursor(Brain.Screen.row(), 1);
-     		  Brain.Screen.print(" ");      //Overwrites the > selection arrrow
-     		  Brain.Screen.setCursor(Brain.Screen.row() - 1, 1);
-     		  Brain.Screen.print(">");
-     		}
-    	}
-    	if (buttonPressed == "right")
-    	{
-     		if (Brain.Screen.row() < NUM_OPTIONS)
-     		{
-     		  Brain.Screen.setCursor(Brain.Screen.row(), 1);
-     		  Brain.Screen.print(" ");      //Clears the > selection arrrow
-     		  Brain.Screen.setCursor(Brain.Screen.row() + 1, 1);
-     		  Brain.Screen.print(">");
-     		}
-    	}
-      if (buttonPressed == "check")
-  		{
-        if (Brain.Screen.row() == 2)
-          order[i] = "Doritos";
-        else if (Brain.Screen.row() == 3)
-          order[i] = "Cheetos";
-        else if (Brain.Screen.row() == 4)
-          order[i] = "Ruffles";
-        else if (Brain.Screen.row() == 5)
-          {
-            order[i] = "Nothing";
-            doneOrdering = true;
-          }
-        else if (Brain.Screen.row() == 6)
-          endProgram = true;
-        snackSelected = true;
-
-        if (!endProgram)
-        {
-          if (!confirm(order[i]))
-            i--;
-        }
-  		}
     }
-	}
+    while (TouchLED12.pressing())
+    {
+    }
+}
+
+void findCouch(double couchPos, double &robotPos)
+{
+    const int NEAR_COUCH = 240; // Distance between the distance sensor and the couch
+
+    MotorLeft.setPosition(0, turns);
+
+    MotorLeft.spin(reverse, SPEED, percent);
+    MotorRight.spin(reverse, SPEED, percent);
+    while (MotorLeft.position(turns) * WHEEL_CIRC > -ROBOT_LENGTH)
+    {
+    }
+    MotorLeft.stop(brake);
+    MotorRight.stop(brake);
+
+    robotTurn("around", robotPos);
+
+    MotorLeft.spin(forward, SPEED, percent);
+    MotorRight.spin(forward, SPEED, percent);
+    while (Distance2.objectDistance(mm) > NEAR_COUCH)
+    {
+    }
+    MotorLeft.stop(brake);
+    MotorRight.stop(brake);
+    couchPos = MotorLeft.position(turns);
+
+    robotTurn("around", robotPos);
+
+    Brain.Screen.setCursor(1, 1);
+    // Brain.playSound(tada); BRING BACK LATER. Just made silent for now. Don't want to bother others while testing. NOTENOTE
+    Brain.Screen.print("Hello! I am here ");
+    Brain.Screen.newLine();
+    Brain.Screen.print("to serve you. Press the");
+    Brain.Screen.newLine();
+    Brain.Screen.print("touchLED when you want a snack!");
+}
+
+void menuSelect(std::string order[NUM_ORDERS], bool &endProgram)
+{
+    const int NUM_OPTIONS = 6;
+    bool doneOrdering = false;
+    bool snackSelected = false;
+
+    for (int i = 0; (i < NUM_ORDERS) && (!doneOrdering) && (!endProgram); i++)
+    {
+        Brain.Screen.clearScreen();
+        Brain.Screen.setCursor(1, 1);
+        Brain.Screen.print("  What snack?");
+        Brain.Screen.newLine();
+        Brain.Screen.print("  Doritos");
+        Brain.Screen.newLine();
+        Brain.Screen.print("  Cheetos");
+        Brain.Screen.newLine();
+        Brain.Screen.print("  Ruffles");
+        Brain.Screen.newLine();
+        Brain.Screen.print("  Done");
+        Brain.Screen.newLine();
+        Brain.Screen.print("  End Program");
+        Brain.Screen.setCursor(2, 1);
+        Brain.Screen.print(">");
+
+        snackSelected = false;
+        while (!snackSelected)
+        {
+            std::string buttonPressed = "";
+            while (!Brain.buttonLeft.pressing() && !Brain.buttonRight.pressing() && !Brain.buttonCheck.pressing())
+            {
+            }
+            if (Brain.buttonLeft.pressing())
+                buttonPressed = "left";
+            if (Brain.buttonRight.pressing())
+                buttonPressed = "right";
+            if (Brain.buttonCheck.pressing())
+                buttonPressed = "check";
+            while (Brain.buttonLeft.pressing() || Brain.buttonRight.pressing() || Brain.buttonCheck.pressing())
+            {
+            }
+            if (buttonPressed == "left")
+            {
+                if (Brain.Screen.row() > 2)
+                {
+                    Brain.Screen.setCursor(Brain.Screen.row(), 1);
+                    Brain.Screen.print(" "); // Overwrites the > selection arrrow
+                    Brain.Screen.setCursor(Brain.Screen.row() - 1, 1);
+                    Brain.Screen.print(">");
+                }
+            }
+            if (buttonPressed == "right")
+            {
+                if (Brain.Screen.row() < NUM_OPTIONS)
+                {
+                    Brain.Screen.setCursor(Brain.Screen.row(), 1);
+                    Brain.Screen.print(" "); // Clears the > selection arrrow
+                    Brain.Screen.setCursor(Brain.Screen.row() + 1, 1);
+                    Brain.Screen.print(">");
+                }
+            }
+            if (buttonPressed == "check")
+            {
+                if (Brain.Screen.row() == 2)
+                    order[i] = "Doritos";
+                else if (Brain.Screen.row() == 3)
+                    order[i] = "Cheetos";
+                else if (Brain.Screen.row() == 4)
+                    order[i] = "Ruffles";
+                else if (Brain.Screen.row() == 5)
+                {
+                    order[i] = "Nothing";
+                    doneOrdering = true;
+                }
+                else if (Brain.Screen.row() == 6)
+                    endProgram = true;
+                snackSelected = true;
+
+                if (!endProgram)
+                {
+                    if (!confirm(order[i]))
+                        i--;
+                }
+            }
+        }
+    }
 }
 
 bool confirm(const std::string chipString)
-{ 
-	Brain.Screen.clearScreen();
-	Brain.Screen.setCursor(1,1);
-	Brain.Screen.print("Selected: %s", chipString.c_str());
-	Brain.Screen.newLine();
-	Brain.Screen.newLine();
-	Brain.Screen.print("Right to confirm");
-  Brain.Screen.newLine();
-  Brain.Screen.print("Left to cancel"); //Might change menu
-	//Lines above set the screen and then it displays a confirmation message and returns the users choice back to them so they can see their choice and decide if they want something else or if that's what they meant to select.
-	while (true) //loop waits until user presses check or x
-	{
-		if (Brain.buttonRight.pressing()) //checks if check button is pressed
-		{ 
-			while(Brain.buttonRight.pressing()) //waits until the button is released
-			{} 
-			return true; //returns true if check is pressed
-		}
-		else if (Brain.buttonLeft.pressing())
-		{
-			while (Brain.buttonLeft.pressing())
-			{}
-			return false;
-		}
-	}
+{
+    Brain.Screen.clearScreen();
+    Brain.Screen.setCursor(1, 1);
+    Brain.Screen.print("Selected: %s", chipString.c_str());
+    Brain.Screen.newLine();
+    Brain.Screen.newLine();
+    Brain.Screen.print("Right to confirm");
+    Brain.Screen.newLine();
+    Brain.Screen.print("Left to cancel"); // Might change menu
+    // Lines above set the screen and then it displays a confirmation message and returns the users choice back to them so they can see their choice and decide if they want something else or if that's what they meant to select.
+    while (true) // loop waits until user presses check or x
+    {
+        if (Brain.buttonRight.pressing()) // checks if check button is pressed
+        {
+            while (Brain.buttonRight.pressing()) // waits until the button is released
+            {
+            }
+            return true; // returns true if check is pressed
+        }
+        else if (Brain.buttonLeft.pressing())
+        {
+            while (Brain.buttonLeft.pressing())
+            {
+            }
+            return false;
+        }
+    }
 }
 
-void getSnack(std::string order[NUM_ORDERS], double& robotPos)
+void getSnack(std::string order[NUM_ORDERS], double &robotPos)
 {
-  for (int i = 0; i < 2; i++)
-  {
-    //reading the chip bag orders in array
-    std::string colour = order[i];
-
-    //if there is only one order, ensures it only fulfils one order
-    if (colour != "Nothing")
+    for (int i = 0; i < 2; i++)
     {
-      MotorVert.spin(forward, SPEED, percent);
-      while(MotorVert.position(degrees) < VERT_MOTOR_DEGREES)
-      {}
-      MotorVert.stop(brake);
-     
-      MotorGrab.spin(forward, GRAB_SPEED, percent);
-      while (MotorGrab.position(degrees) < CLAW_MOTOR_DEGREES)
-      {}
-      MotorGrab.stop();
+        // reading the chip bag orders in array
+        std::string colour = order[i];
 
-
-
-
-      //for 3 chip types CHANGE WHEN WE GET OPTIONS, Also make this a const int variable NOTENOTE
-      for (int p = 0; p < 3; p++)
-      {
-        Brain.playSound(tada);
-        Brain.Screen.clearScreen();
-        Brain.Screen.setCursor(1,1);
-        Brain.Screen.print("i:%d p:%d", i, p);
-        //drive fwd until close enough to chip bag
-        MotorLeft.spin(forward, SPEED, percent);
-        MotorRight.spin(forward, SPEED, percent);
-        while(Distance2.objectDistance(mm) > DISTANCE_FROM_BACK_OF_RACK)
-        {}
-        MotorLeft.stop();
-        MotorRight.stop();
-
-        wait(1, seconds);
-        if (((colour == "Sun Chips") && (Optical6.hue() > SUN_CHIPS_START_DEGREES && Optical6.hue() < SUN_CHIPS_END_DEGREES)) NOTENOTE
-            /*|| ((colour == "") &&  (Optical6.hue() > _________ && Optical6.hue() < _________)
-            || ((colour == "") && (Optical6.hue() > __________ && Optical6.hue() < _______)))*/)
+        // if there is only one order, ensures it only fulfils one order
+        if (colour != "Nothing")
         {
-          MotorGrab.spin(reverse, GRAB_SPEED, percent);
-          MotorGrab.spin(reverse, HOLD_CHIPS, percent);
-          wait(3, seconds);
-          
-          //reverse bot
-          MotorRight.setPosition(0, turns);
-          MotorLeft.spin(reverse,SPEED,percent);
-          MotorRight.spin(reverse,SPEED,percent);
-          while (MotorRight.position(turns) > -1)
-          {}
-          MotorLeft.stop(brake);
-          MotorRight.stop(brake);
-       
-          //carry first snack in basket, second snack is still held in claw
-          if (i == 0)
-            dropBasket();
-          if (p != 0)
-          {
-            robotTurn("left", robotPos);
-            MotorLeft.spin(forward, SPEED, percent);
-            MotorRight.spin(forward, SPEED, percent);
-            MotorRight.setPosition(0, turns);
-            while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE * p - CHIP_DISTANCE_CORRECTION_FACTOR * p);
-            {}
-            MotorLeft.stop();
-            MotorRight.stop();
-            robotTurn("right", robotPos);
-          }
-
-          //break out of for loop
-          //change to constant for legibility NOTENOTE
-          p = 4;
-        }
-        else
-        {
-          //call function
-          if (p < 2)
-            nextChip(colour, robotPos);
-          else
+            MotorVert.spin(forward, SPEED, percent);
+            while (MotorVert.position(degrees) < VERT_MOTOR_DEGREES)
             {
-              MotorRight.setPosition(0, turns);
-              MotorLeft.spin(reverse,SPEED,percent);
-              MotorRight.spin(reverse,SPEED,percent);
-              while (MotorRight.position(turns) > -1)
-              {}
-              MotorLeft.stop(brake);
-              MotorRight.stop(brake);
-              robotTurn("left", robotPos);
-              MotorLeft.spin(forward, SPEED, percent);
-              MotorRight.spin(forward, SPEED, percent);
-              MotorRight.setPosition(0, turns);
-              while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE * p - CHIP_DISTANCE_CORRECTION_FACTOR * p);
-              {}
-              MotorLeft.stop();
-              MotorRight.stop();
-              robotTurn("right", robotPos);
+            }
+            MotorVert.stop(brake);
+
+            MotorGrab.spin(forward, GRAB_SPEED, percent);
+            while (MotorGrab.position(degrees) < CLAW_MOTOR_DEGREES)
+            {
+            }
+            MotorGrab.stop();
+
+            // for 3 chip types CHANGE WHEN WE GET OPTIONS, Also make this a const int variable NOTENOTE
+            for (int p = 0; p < 3; p++)
+            {
+                Brain.playSound(tada);
+                Brain.Screen.clearScreen();
+                Brain.Screen.setCursor(1, 1);
+                Brain.Screen.print("i:%d p:%d", i, p);
+                // drive fwd until close enough to chip bag
+                MotorLeft.spin(forward, SPEED, percent);
+                MotorRight.spin(forward, SPEED, percent);
+                while (Distance2.objectDistance(mm) > DISTANCE_FROM_BACK_OF_RACK)
+                {
+                }
+                MotorLeft.stop();
+                MotorRight.stop();
+
+                wait(1, seconds);
+                if (((colour == "Sun Chips") && (Optical6.hue() > SUN_CHIPS_START_DEGREES && Optical6.hue() < SUN_CHIPS_END_DEGREES)) NOTENOTE
+                    /*|| ((colour == "") &&  (Optical6.hue() > _________ && Optical6.hue() < _________)
+                    || ((colour == "") && (Optical6.hue() > __________ && Optical6.hue() < _______)))*/
+                )
+                {
+                    MotorGrab.spin(reverse, GRAB_SPEED, percent);
+                    MotorGrab.spin(reverse, HOLD_CHIPS, percent);
+                    wait(3, seconds);
+
+                    // reverse bot
+                    MotorRight.setPosition(0, turns);
+                    MotorLeft.spin(reverse, SPEED, percent);
+                    MotorRight.spin(reverse, SPEED, percent);
+                    while (MotorRight.position(turns) > -1)
+                    {
+                    }
+                    MotorLeft.stop(brake);
+                    MotorRight.stop(brake);
+
+                    // carry first snack in basket, second snack is still held in claw
+                    if (i == 0)
+                        dropBasket();
+                    if (p != 0)
+                    {
+                        robotTurn("left", robotPos);
+                        MotorLeft.spin(forward, SPEED, percent);
+                        MotorRight.spin(forward, SPEED, percent);
+                        MotorRight.setPosition(0, turns);
+                        while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE * p - CHIP_DISTANCE_CORRECTION_FACTOR * p)
+                            ;
+                        {
+                        }
+                        MotorLeft.stop();
+                        MotorRight.stop();
+                        robotTurn("right", robotPos);
+                    }
+
+                    // break out of for loop
+                    // change to constant for legibility NOTENOTE
+                    p = 4;
+                }
+                else
+                {
+                    // call function
+                    if (p < 2)
+                        nextChip(colour, robotPos);
+                    else
+                    {
+                        MotorRight.setPosition(0, turns);
+                        MotorLeft.spin(reverse, SPEED, percent);
+                        MotorRight.spin(reverse, SPEED, percent);
+                        while (MotorRight.position(turns) > -1)
+                        {
+                        }
+                        MotorLeft.stop(brake);
+                        MotorRight.stop(brake);
+                        robotTurn("left", robotPos);
+                        MotorLeft.spin(forward, SPEED, percent);
+                        MotorRight.spin(forward, SPEED, percent);
+                        MotorRight.setPosition(0, turns);
+                        while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE * p - CHIP_DISTANCE_CORRECTION_FACTOR * p)
+                            ;
+                        {
+                        }
+                        MotorLeft.stop();
+                        MotorRight.stop();
+                        robotTurn("right", robotPos);
+                    }
+                }
             }
         }
-      }  
     }
-  }
-  Brain.playSound(tada);
+    Brain.playSound(tada);
 }
 
-void nextChip(std::string colour, double& robotPos)
+void nextChip(std::string colour, double &robotPos)
 {
-  
-  //reverse
-  MotorLeft.spin(reverse, SPEED, percent);
-  MotorRight.spin(reverse, SPEED, percent);
-  MotorRight.setPosition(0, turns);
-  while(MotorRight.position(turns) > -1)
-  {}
-  MotorLeft.stop();
-  MotorRight.stop();
-  
-  //turn right
-  robotTurn("right", robotPos);
-  MotorRight.setPosition(0, turns);
 
-  MotorLeft.spin(forward, SPEED, percent);
-  MotorRight.spin(forward, SPEED, percent);
-  while(MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE)
-  {}
-  MotorLeft.stop(brake);
-  MotorRight.stop(brake);
+    // reverse
+    MotorLeft.spin(reverse, SPEED, percent);
+    MotorRight.spin(reverse, SPEED, percent);
+    MotorRight.setPosition(0, turns);
+    while (MotorRight.position(turns) > -1)
+    {
+    }
+    MotorLeft.stop();
+    MotorRight.stop();
 
+    // turn right
+    robotTurn("right", robotPos);
+    MotorRight.setPosition(0, turns);
 
-  robotTurn("left", robotPos);
+    MotorLeft.spin(forward, SPEED, percent);
+    MotorRight.spin(forward, SPEED, percent);
+    while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE)
+    {
+    }
+    MotorLeft.stop(brake);
+    MotorRight.stop(brake);
+
+    robotTurn("left", robotPos);
 }
 
 void dropBasket()
 {
-  //lower elevator
-  MotorVert.spin(reverse, SPEED, percent);
-  while(MotorVert.position(degrees) > 0)
-  {}
-  MotorVert.stop(brake);
+    // lower elevator
+    MotorVert.spin(reverse, SPEED, percent);
+    while (MotorVert.position(degrees) > 0)
+    {
+    }
+    MotorVert.stop(brake);
 
-
-  //open claw
-  MotorGrab.spin(forward, GRAB_SPEED, percent);
-  wait (3, seconds);
-  MotorGrab.stop(brake);
+    // open claw
+    MotorGrab.spin(forward, GRAB_SPEED, percent);
+    wait(3, seconds);
+    MotorGrab.stop(brake);
 }
 
-
-//NEEDS TESTING
-void moveTo(double targetPos, double& robotPos, double couchPos)
+// NEEDS TESTING
+void moveTo(double targetPos, double &robotPos, double &couchPos)
 {
     const double APPROACH_TOLERANCE = 2;
     const double FINAL_TOLERANCE = 1;
@@ -573,126 +624,141 @@ void moveTo(double targetPos, double& robotPos, double couchPos)
             MotorLeft.stop();
             MotorRight.stop();
 
-            if (!avoidObstacle()) {
-                //return to couch
+            if (!obstacleAlarm(SAFE_DISTANCE)) // there is something in the way
+            {
+                // return to couch
                 moveTo(couchPos, robotPos, couchPos);
                 returnedToCouch = true;
-            } 
+            }
         }
     }
 
-    //arrived at final destination
     MotorLeft.stop(brake);
     MotorRight.stop(brake);
 }
 
-//NEEDS TESTING
-bool avoidObstacle()
+// NEEDS TESTING
+//  NEEDS TESTING
+bool obstacleAlarm(const double SAFE_DISTANCE)
 {
-  const double ALARM_DIST = 30;
-  int weewoo = 0;
-  while (weewoo < 3)\
-  {
-    double dist = Distance2.objectDistance(mm);
-    if (dist >= 0 && dist < ALARM_DIST)
+    int alarmCount = 0;
+    while (alarmCount < 3)
     {
-      Brain.Screen.print("Obstacle Detected");
-      Brain.Screen.newLine();
-      Brain.Screen.print("%f", dist);
-      Brain.Screen.print("Away!");
+        double dist = Distance2.objectDistance(mm);
+        if (dist > 0 && dist < SAFE_DISTANCE)
+        {
+            Brain.Screen.print("Obstacle Detected");
+            Brain.Screen.newLine();
+            Brain.Screen.print("%f", dist);
+            Brain.Screen.print(" mm away!");
 
-      Brain.playSound(alarm);
-      weewoo++;
-      wait(5, seconds);
+            Brain.playSound(alarm);
+            alarmCount++;
+            wait(5, seconds);
+        }
+        else
+        {
+            // the path is clear
+            return true;
+        }
     }
-    else
-    {
-      return true;
-    }
-  }
-  return false;
-} 
 
-void updateRobotPos(double& robotPos)
-{
-	if ((int)BrainInertial.rotation(degrees) % 360 < 20 || (int)BrainInertial.rotation(degrees) % 360 > 340) //If facing direction
-		robotPos -= MotorLeft.position(turns);
-	else if (std::abs((int)BrainInertial.rotation(degrees) % 360 - 180 ) < 40) //If facing negative direction
-		robotPos += MotorLeft.position(turns);
-  MotorLeft.setPosition(0, turns);
+    // obstacle still there after three alarms
+    return false;
 }
 
-void robotTurn(std::string direction, double& robotPos) //Turns the robot either to the left, to the right, or around 180 degrees RELATIVE TO ITSELF
+void updateRobotPos(double &robotPos)
 {
-	const double TURNING_SPEED = 20, ROTATION_ANGLE = 90;
-	
-	updateRobotPos(robotPos);
-	if (direction == "right")
-	{
-    double tempInertialRotation = BrainInertial.rotation(degrees);
-    int numTurns = 1;
-    BrainInertial.setRotation(0, degrees);
-    while (abs(BrainInertial.rotation(degrees) - 90) > 0.05)
+    double delta = MotorLeft.position(turns); // how much we moved since last update
+    int angle = (int)BrainInertial.rotation(degrees);
+    angle = angle % 360;
+    if (angle < 0)
     {
-      if (numTurns % 2 == 0)
-      {
-        MotorLeft.spin(forward, TURNING_SPEED / numTurns, percent);
-		    MotorRight.spin(reverse, TURNING_SPEED / numTurns, percent); 
-		    while (BrainInertial.rotation(degrees) < ROTATION_ANGLE) 
-		    {}
-      }
-      else 
-      {
-        MotorLeft.spin(reverse, TURNING_SPEED / numTurns, percent);
-        MotorRight.spin(forward, TURNING_SPEED / numTurns, percent);
-        while (BrainInertial.rotation(degrees) > ROTATION_ANGLE)
-        {}
-      }
-      numTurns++;
-      MotorLeft.stop(brake);
-      MotorRight.stop(brake);
-      wait(20, msec);
+        angle += 360;
     }
-    BrainInertial.setRotation(tempInertialRotation + BrainInertial.rotation(degrees), degrees);
-	}
-	else if (direction == "left")
-	{
-    double tempInertialRotation = BrainInertial.rotation(degrees);
-    int numTurns = 1;
-    BrainInertial.setRotation(0, degrees);
-    while (abs(BrainInertial.rotation(degrees) + 90) > 0.05)
+
+    if (angle < 20 || angle > 340) // If facing towards couch (increasing to couchPos)
+        robotPos += delta;
+    else if (std::abs(angle - 180) < 40) // If facing towards snacks (decreasing to zero)
+        robotPos -= delta;
+    MotorLeft.setPosition(0, turns);
+}
+
+void robotTurn(std::string direction, double &robotPos) // Turns the robot either to the left, to the right, or around 180 degrees RELATIVE TO ITSELF
+{
+    const double TURNING_SPEED = 20, ROTATION_ANGLE = 90;
+
+    updateRobotPos(robotPos);
+    if (direction == "right")
     {
-      if (numTurns % 2 == 0)
-      {
-        MotorLeft.spin(reverse, TURNING_SPEED / numTurns, percent);
-		    MotorRight.spin(forward, TURNING_SPEED / numTurns, percent); 
-		    while (BrainInertial.rotation(degrees) > -ROTATION_ANGLE) 
-		    {}
-      }
-      else 
-      {
-        MotorLeft.spin(forward, TURNING_SPEED / numTurns, percent);
-        MotorRight.spin(reverse, TURNING_SPEED / numTurns, percent);
-        while (BrainInertial.rotation(degrees) < -ROTATION_ANGLE)
-        {}
-      }
-      numTurns++;
-      MotorLeft.stop(brake);
-      MotorRight.stop(brake);
-      wait(20, msec);
+        double tempInertialRotation = BrainInertial.rotation(degrees);
+        int numTurns = 1;
+        BrainInertial.setRotation(0, degrees);
+        while (abs(BrainInertial.rotation(degrees) - 90) > 0.05)
+        {
+            if (numTurns % 2 == 0)
+            {
+                MotorLeft.spin(forward, TURNING_SPEED / numTurns, percent);
+                MotorRight.spin(reverse, TURNING_SPEED / numTurns, percent);
+                while (BrainInertial.rotation(degrees) < ROTATION_ANGLE)
+                {
+                }
+            }
+            else
+            {
+                MotorLeft.spin(reverse, TURNING_SPEED / numTurns, percent);
+                MotorRight.spin(forward, TURNING_SPEED / numTurns, percent);
+                while (BrainInertial.rotation(degrees) > ROTATION_ANGLE)
+                {
+                }
+            }
+            numTurns++;
+            MotorLeft.stop(brake);
+            MotorRight.stop(brake);
+            wait(20, msec);
+        }
+        BrainInertial.setRotation(tempInertialRotation + BrainInertial.rotation(degrees), degrees);
     }
-    BrainInertial.setRotation(tempInertialRotation + BrainInertial.rotation(degrees), degrees);
-  }
-	else if (direction == "around")
-	{
-		robotTurn("right", robotPos);
-    robotTurn("right", robotPos);
-	}
-	MotorLeft.stop(brake);
-	MotorRight.stop(brake);
-	
-	if ((int)BrainInertial.rotation(degrees) % 360 < 20 || (int)BrainInertial.rotation(degrees) % 360 > 340) //We should probably check that this part is up to date and works with updateRoboPos() now that I think of it
-    MotorLeft.setPosition(-robotPos, turns);
-	else if (std::abs((int)BrainInertial.rotation(degrees) % 360 - 180 ) < 20)
-		MotorLeft.setPosition(robotPos, turns);
+    else if (direction == "left")
+    {
+        double tempInertialRotation = BrainInertial.rotation(degrees);
+        int numTurns = 1;
+        BrainInertial.setRotation(0, degrees);
+        while (abs(BrainInertial.rotation(degrees) + 90) > 0.05)
+        {
+            if (numTurns % 2 == 0)
+            {
+                MotorLeft.spin(reverse, TURNING_SPEED / numTurns, percent);
+                MotorRight.spin(forward, TURNING_SPEED / numTurns, percent);
+                while (BrainInertial.rotation(degrees) > -ROTATION_ANGLE)
+                {
+                }
+            }
+            else
+            {
+                MotorLeft.spin(forward, TURNING_SPEED / numTurns, percent);
+                MotorRight.spin(reverse, TURNING_SPEED / numTurns, percent);
+                while (BrainInertial.rotation(degrees) < -ROTATION_ANGLE)
+                {
+                }
+            }
+            numTurns++;
+            MotorLeft.stop(brake);
+            MotorRight.stop(brake);
+            wait(20, msec);
+        }
+        BrainInertial.setRotation(tempInertialRotation + BrainInertial.rotation(degrees), degrees);
+    }
+    else if (direction == "around")
+    {
+        robotTurn("right", robotPos);
+        robotTurn("right", robotPos);
+    }
+    MotorLeft.stop(brake);
+    MotorRight.stop(brake);
+
+    if ((int)BrainInertial.rotation(degrees) % 360 < 20 || (int)BrainInertial.rotation(degrees) % 360 > 340) // We should probably check that this part is up to date and works with updateRoboPos() now that I think of it
+        MotorLeft.setPosition(-robotPos, turns);
+    else if (std::abs((int)BrainInertial.rotation(degrees) % 360 - 180) < 20)
+        MotorLeft.setPosition(robotPos, turns);
 }
