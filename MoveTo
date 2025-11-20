@@ -1,90 +1,43 @@
-//weird errors i noticed
-/*
-- updateRobotPos() -> check if i am passing into this correctly
-- i think the updateRobotPos() function itself might also be flawed or maybe i just don't understand it
-    - like i think it might be updating robotPos[Y] (Y value) even when it is facing/moving the X direction??
-    
-- the returning to couch after avoidObstacle returns false can become an infinite loop.... 
-- i also hardcoded the thing to have targetPosition = 0, change that if you want.
+void moveTo(double targetPos, double &robotPos, double &couchPos)
+{
+    const double APPROACH_TOLERANCE = 2;
+    const double FINAL_TOLERANCE = 1;
+    const double SAFE_DISTANCE = 120;
 
-TLDR: i think updateRobotPos() updates the Y value even when moving in or facing the X directions, maybe check that
-*/
+    updateRobotPos(robotPos);
 
+    double currentPos = robotPos;
 
-void moveTo(double targetPos, std::string& facing, double robotPos[2]) {
-	const double APPROACH_TOLERANCE = 400;
-	const double FINAL_TOLERANCE = 200;
-	const double SAFE_DISTANCE = 120;
+    if (targetPos == couchPos)
+    {
+        // we are at the snack bar, moving positive direction until couchPos
+        // turn towards the couch (180 degrees)
+        robotTurn("around", robotPos);
+    }
 
-	updateRobotPos(facing, robotPos); //get robot position
-	double currentPos = robotPos[Y]; // use the Y-value (only travelling on one axis)
-	double moveDistance = targetPos - currentPos;
+    // start driving
+    MotorLeft.spin(forward, SPEED, percent);
+    MotorRight.spin(forward, SPEED, percent);
+    bool returnedToCouch = false;
+    while (std::abs((targetPos - currentPos)) > FINAL_TOLERANCE && !returnedToCouch)
+    {
+        updateRobotPos(robotPos);
+        currentPos = robotPos;
 
-	//determining which direction to move
-	bool towardsCouch = (moveDistance > 0);
+        if (Distance2.objectDistance(mm) < SAFE_DISTANCE)
+        {
+            MotorLeft.stop();
+            MotorRight.stop();
 
-	if (towardsCouch) {
-		robotTurnToFace(minusY, facing, robotPos);
-	} else {
-		robotTurnToFace(plusY, facing, robotPos);
-	}
-	
-	
-	//reset current position value before starting to drive
-	currentPos = robotPos[Y];
-
-	//drive fast until APPROACH_TOLERANCE
-	MotorLeft.spin(forward, SPEED, percent);
-	MotorRight.spin(forward, SPEED, percent);
-	while (std::abs(targetPos - currentPos) > APPROACH_TOLERANCE) {
-		updateRobotPos(facing, robotPos);
-		currentPos = robotPos[Y];
-
-		if (Distance2.objectDistance(mm) < SAFE_DISTANCE) {
-			MotorLeft.stop();
-			MotorRight.stop();
-
-			bool cont = avoidObstacle(facing, robotPos); //THE AVOID FUNCTION IS HERE~!!!!!!!!!
-			
-			if (cont) { //moved around object
-			    MotorLeft.spin(forward, SPEED, percent);
-	            MotorRight.spin(forward, SPEED, percent);
-	            updateRobotPos(facing, robotPos);
-		        currentPos = robotPos[Y];
-			} else { //object still there, return to starting position
-			    moveTo(0, facing, robotPos); //strict value of 0 is the couch position
-			    return;
-			}
-		}
-	}
-	
-	//drive slow util FINAL_TOLERANCE
-	MotorLeft.spin(forward, SPEED*0.5, percent);
-	MotorRight.spin(forward, SPEED*0.5, percent);
-
-	while (std::abs(targetPos - currentPos) > FINAL_TOLERANCE) {
-		updateRobotPos(facing, robotPos);
-		currentPos = robotPos[Y];
-        
-        if (Distance2.objectDistance(mm) < SAFE_DISTANCE) {
-			MotorLeft.stop();
-			MotorRight.stop();	
-			
-    		bool cont = avoidObstacle(facing, robotPos); //THE AVOID FUNCTION IS HERE~!!!!!!!!!
-    		
-    		if (cont) { //moved around object
-    		    MotorLeft.spin(forward, SPEED*0.5, percent);
-                MotorRight.spin(forward, SPEED*0.5, percent);
-                updateRobotPos(facing, robotPos);
-    	        currentPos = robotPos[Y];
-    		} else { //object still there, return to starting position
-    		    moveTo(0, facing, robotPos); //strict value of 0 is the couch position
-    		    return;
-    		}
+            if (!avoidObstacle()) {
+                //return to couch
+                moveTo(couchPos, robotPos, couchPos);
+                returnedToCouch = true;
+            } 
         }
-	}
-	
-	//arrived at final destination
+    }
+
+    //arrived at final destination
     MotorLeft.stop(brake);
     MotorRight.stop(brake);
 }
