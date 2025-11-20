@@ -139,11 +139,11 @@ void configureAllSensors()
 
 //Function prototypes
 void waitForTouch();
-void findCouch(double couchPos, double robotPos);
+void findCouch(double couchPos, double& robotPos);
 void menuSelect(std::string order[], bool& endProgram);
 bool confirm(const std::string chipString);
 void moveTo(double position);
-bool avoidObstacle(double robotPos);
+bool avoidObstacle();
 void updateRobotPos(double& robotPos);
 void robotTurn(std::string direction, double& robotPos);
 void robotTurnToFace(std::string direction, double& robotPos);
@@ -538,115 +538,77 @@ void dropBasket()
 }
 
 
-/*
 //NEEDS TESTING
-void moveTo(double targetPos, double robotPos[2]) {  //moves along **the Y axis**
-	const double APPROACH_TOLERANCE = 400; //Had to change the distances. Millimetres are surprisingly really small lol. I spent like an hour debugging something that's only issue was the distance not being big enough
-	const double FINAL_TOLERANCE = 200;
-	const double SAFE_DISTANCE = 120;
-	
-  updateRobotPos(robotPos); //Made an updateRobotPos function to avoid stale data
-	double currentPos = robotPos[Y]; //I gave it the Y value since it'll be moving between the couch and the $\mathrm{Snack\;Rack^{TM}}$
-	double moveDistance = targetPos - currentPos;
-	
-  //Which direction to go?
-	bool towardsCouch = (moveDistance > 0);
-  if (towardsCouch)
-    robotTurnToFace(minusY, robotPos);
-  else
-    robotTurnToFace(plusY, robotPos);
-	
-	//driving fast until APPROACH_TOLERANCE
-    //drive forwards at a medium/fast speed
-	MotorLeft.spin(forward, SPEED, percent); 
-  MotorRight.spin(forward, SPEED, percent);
-	while (std::abs(targetPos - currentPos) > APPROACH_TOLERANCE)
-  {
-		if (Distance2.objectDistance(mm) < SAFE_DISTANCE) //not safe! object in front
-			//stop motors, run adams functions
-	}
-  //I moved this out of the while loop. I think it'll work like this?
-	//update current position variable
-    updateRobotPos(robotPos);
-	  double currentPos = robotPos[Y];
-
-  MotorLeft.spin(forward, 0.5 * SPEED, percent);
-	MotorRight.spin(forward, 0.5 * SPEED, percent);
-	//driving slow until FINAL_TOLERANCE
-	while (ABSOLUTEVALUEFUNCTION(targetPos - currentPos) > FINAL_TOLERANCE)
-  {
-		if (Distance2.objectDistance(mm) < SAFE_DISTANCE) //not safe! object in front
-			stop motors, run adams functions  //Might have to change this a bit if it interferes with the robot stopping at the right stop at the end
-	}
-  updateRobotPos(robotPos);
-	double currentPos = robotPos[Y];
-	
-	//if we get to this point, it means we are within final tolerance, so we have arrive
-	MotorLeft.stop(brake);
-  MotorRight.stop(brake);
-
-  //If, at the avoid function, it returns false, skip everything up until this point and call the function again to the original position
-}
-*/
-//NEEDS TESTING
-bool avoidObstacle(double& robotPos)
+void moveTo(double targetPos, double &robotPos, double &couchPos)
 {
-	const float STOP_DISTANCE = 200; //Change maybe
-	const float AVOID_DISTANCE = 400;
-	
-	MotorLeft.stop(brake);
-	MotorRight.stop(brake);
-	
-	Brain.playSound(alarm2); //HONK GET OUT THE WAY
-	wait(7, seconds);
-	
-	if (Distance2.objectDistance(mm) > STOP_DISTANCE)
-	{
-		float lastEncoderVal = 0;
-		bool isStuck = false;
-		std::string direction = "right";
-		
-		for (int i = 0; i < 4; i++) //Should 4 be a const?
-		{
-			if (i == 0 || i == 3)
-				robotTurn("right", robotPos);
-			else
-				robotTurn("left", robotPos);
-			if (Distance2.objectDistance(mm) > STOP_DISTANCE)
-					isStuck = true;
-			if (!isStuck)
-			{
-				lastEncoderVal = MotorLeft.position(turns);
-				MotorLeft.spin(forward, SPEED, percent);
-				MotorRight.spin(forward, SPEED, percent);
-				while (MotorLeft.position(turns) * WHEEL_CIRC - lastEncoderVal < AVOID_DISTANCE)
-				{}
-				MotorLeft.stop(brake);
-				MotorRight.stop(brake);
-			}
-			else 
-			{
-        //Looks at the value of i, and undoes everything that it just did
-				for (int j = i; j > 0; j--)
+    const double APPROACH_TOLERANCE = 2;
+    const double FINAL_TOLERANCE = 1;
+    const double SAFE_DISTANCE = 120;
+
+    updateRobotPos(robotPos);
+
+    double currentPos = robotPos;
+
+    if (targetPos == couchPos)
+    {
+        // we are at the snack bar, moving positive direction until couchPos
+        // turn towards the couch (180 degrees)
+        robotTurn("around", robotPos);
+    }
+
+    // start driving
+    MotorLeft.spin(forward, SPEED, percent);
+    MotorRight.spin(forward, SPEED, percent);
+    bool returnedToCouch = false;
+    while (std::abs((targetPos - currentPos)) > FINAL_TOLERANCE && !returnedToCouch)
+    {
+        updateRobotPos(robotPos);
+        currentPos = robotPos;
+
+        if (Distance2.objectDistance(mm) < SAFE_DISTANCE)
         {
-          if (j == 0 || j == 3)
-            robotTurn("left", robotPos);
-          else
-            robotTurn("right", robotPos);
-          lastEncoderVal = MotorLeft.position(turns);
-				  MotorLeft.spin(reverse, SPEED, percent);
-				  MotorRight.spin(reverse, SPEED, percent);
-				  while (MotorLeft.position(turns) * WHEEL_CIRC - lastEncoderVal > AVOID_DISTANCE)
-				  {}
-				  MotorLeft.stop(brake);
-				  MotorRight.stop(brake);
+            MotorLeft.stop();
+            MotorRight.stop();
+
+            if (!avoidObstacle()) {
+                //return to couch
+                moveTo(couchPos, robotPos, couchPos);
+                returnedToCouch = true;
+            } 
         }
-        return false; //I don't think I need to set i = 4 to break out of the loop, but in case I need to, I'm putting this here
-			}
-		}
-	}
-  return true;
+    }
+
+    //arrived at final destination
+    MotorLeft.stop(brake);
+    MotorRight.stop(brake);
 }
+
+//NEEDS TESTING
+bool avoidObstacle()
+{
+  const double ALARM_DIST = 30;
+  int weewoo = 0;
+  while (weewoo < 3)\
+  {
+    double dist = Distance2.objectDistance(mm);
+    if (dist >= 0 && dist < ALARM_DIST)
+    {
+      Brain.Screen.print("Obstacle Detected");
+      Brain.Screen.newLine();
+      Brain.Screen.print("%f", dist);
+      Brain.Screen.print("Away!");
+
+      Brain.playSound(alarm);
+      weewoo++;
+      wait(5, seconds);
+    }
+    else
+    {
+      return true;
+    }
+  }
+  return false;
+} 
 
 void updateRobotPos(double& robotPos)
 {
