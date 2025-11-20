@@ -1,0 +1,51 @@
+// The robot gets placed at the snack stand. Make sure it can see the first snack option in the line.
+
+        // For debugging purposes, delete later
+        /* MotorLeft.spin(forward, SPEED, percent);
+         MotorRight.spin(forward, SPEED, percent);
+         while(true)
+         {
+           Brain.Screen.clearScreen();
+           Brain.Screen.setCursor(1,1);
+           //Check colour
+           //Brain.Screen.print("%s", convertColorToString(Optical6.color()));
+
+           //Check hue
+           //Brain.Screen.print("%f", Optical6.hue());
+
+           //Check distance
+           /*Brain.Screen.print("%f", Distance2.objectDistance(mm));
+           if (Distance2.objectDistance(mm) < DISTANCE_FROM_BACK_OF_RACK)
+             {
+               Brain.playSound(alarm);
+               MotorLeft.stop(brake);
+               MotorRight.stop(brake);
+               wait(2, seconds);
+               MotorLeft.spin(forward, SPEED, percent);
+               MotorRight.spin(forward, SPEED, percent);
+             }
+           wait(50, msec);
+         }*/
+
+        findCouch(couchPos, robotPos);
+        wait(5, seconds);
+ // Delete this once done testing
+
+        /*waitForTouch();
+        BrainInertial.setRotation(0, degrees);
+            findCouch(couchPos, robotPos);
+            waitForTouch();
+
+        for (int i = 0; i < NUM_ORDERS; i++)
+          snackSelection[i] = "Nothing";
+            menuSelect(snackSelection, endProgram);
+
+            robotTurn("around", robotPos);
+            moveTo(snackPos);
+            for (int i = 0; i < NUM_ORDERS; i++)
+            {
+                getSnack(snackSelection[i]);
+            }
+            moveTo(couchPos);
+        //Stop claw motor if you haven't already so that it'll open easily
+            Brain.playSound(tada);*/
