@@ -144,11 +144,11 @@ void menuSelect(std::string order[], bool& endProgram);
 bool confirm(const std::string chipString);
 void moveTo(double position);
 bool avoidObstacle(double robotPos);
-void updateRobotPos(double robotPos);
-void robotTurn(std::string direction, double robotPos);
-void robotTurnToFace(std::string direction, double robotPos);
-void getSnack(std::string order[2], double robotPos);
-void nextChip(std::string colour, double robotPos);
+void updateRobotPos(double& robotPos);
+void robotTurn(std::string direction, double& robotPos);
+void robotTurnToFace(std::string direction, double& robotPos);
+void getSnack(std::string order[2], double& robotPos);
+void nextChip(std::string colour, double& robotPos);
 void dropBasket();
 
 const double WHEEL_CIRC = 200;
@@ -242,7 +242,7 @@ void waitForTouch()
 	{}
 }
 
-void findCouch(double couchPos, double robotPos)
+void findCouch(double couchPos, double& robotPos)
 {
 	const int NEAR_COUCH = 240; //Distance between the distance sensor and the couch
 	
@@ -384,7 +384,7 @@ bool confirm(const std::string chipString)
 	}
 }
 
-void getSnack(std::string order[NUM_ORDERS], double robotPos)
+void getSnack(std::string order[NUM_ORDERS], double& robotPos)
 {
   for (int i = 0; i < 2; i++)
   {
@@ -494,7 +494,7 @@ void getSnack(std::string order[NUM_ORDERS], double robotPos)
 }
 
 
-void nextChip(std::string colour, double robotPos)
+void nextChip(std::string colour, double& robotPos)
 {
   
   //reverse
@@ -589,7 +589,7 @@ void moveTo(double targetPos, double robotPos[2]) {  //moves along **the Y axis*
 }
 */
 //NEEDS TESTING
-bool avoidObstacle(double robotPos)
+bool avoidObstacle(double& robotPos)
 {
 	const float STOP_DISTANCE = 200; //Change maybe
 	const float AVOID_DISTANCE = 400;
@@ -648,7 +648,7 @@ bool avoidObstacle(double robotPos)
   return true;
 }
 
-void updateRobotPos(double robotPos)
+void updateRobotPos(double& robotPos)
 {
 	if ((int)BrainInertial.rotation(degrees) % 360 < 20 || (int)BrainInertial.rotation(degrees) % 360 > 340) //If facing direction
 		robotPos -= MotorLeft.position(turns);
@@ -657,7 +657,7 @@ void updateRobotPos(double robotPos)
   MotorLeft.setPosition(0, turns);
 }
 
-void robotTurn(std::string direction, double robotPos) //Turns the robot either to the left, to the right, or around 180 degrees RELATIVE TO ITSELF
+void robotTurn(std::string direction, double& robotPos) //Turns the robot either to the left, to the right, or around 180 degrees RELATIVE TO ITSELF
 {
 	const double TURNING_SPEED = 20, ROTATION_ANGLE = 90;
 	
