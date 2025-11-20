@@ -1,20 +1,25 @@
-bool avoidObstacle(){
-  const double alarmDist=30;
-  int weewoo=0;
-  while(weewoo<3){
-    double dist= Distance2.objectDistance(mm);
-    if(dist>0 && dist <alarmDist){
+bool avoidObstacle()
+{
+  const double ALARM_DIST = 30;
+  int weewoo = 0;
+  while (weewoo < 3)\
+  {
+    double dist = Distance2.objectDistance(mm);
+    if (dist >= 0 && dist < alarmDist)
+    {
       Brain.Screen.print("Obstacle Detected");
       Brain.Screen.newLine();
-      Brain.Screen.print(dist);
+      Brain.Screen.print("%f", dist);
       Brain.Screen.print("Away!");
 
-      brain.playSound(soundType::alarm);
+      Brain.playSound(alarm);
       weewoo++;
-      wait(5,seconds);
+      wait(5, seconds);
     }
-    else{
+    else
+    {
       return true;
     }
   }
   return false;
+} 
