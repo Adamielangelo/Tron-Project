@@ -175,14 +175,14 @@ void configureAllSensors()
 
 // Function prototypes
 void waitForTouch();
-void findCouch(double couchPos, double &robotPos);
+void findCouch(double &couchPos, double &robotPos);
 void menuSelect(std::string order[], bool &endProgram);
 bool confirm(const std::string chipString);
 void moveTo(double targetPos, double &robotPos, double couchPos);
 bool obstacleAlarm(const double SAFE_DISTANCE);
 void updateRobotPos(double &robotPos);
 void robotTurn(std::string direction, double &robotPos);
-void robotTurnToFace(std::string direction, double &robotPos);
+//void robotTurnToFace(std::string direction, double &robotPos);
 void getSnack(std::string order[2], double &robotPos);
 void nextChip(std::string colour, double &robotPos);
 void dropBasket();
@@ -216,13 +216,13 @@ int main()
 
     findCouch(couchPos, robotPos); // give couchPos a positive value
     wait(5, seconds);
-    /*
+    
     while (!endProgram)
     {
-        moveTo(snackPos, robotPos, couchPos);
+       // moveTo(snackPos, robotPos, couchPos);
         endProgram = true;
     }
-    */
+    
     Brain.programStop();
 }
 
@@ -240,8 +240,6 @@ void findCouch(double &couchPos, double &robotPos)
 {
     const int NEAR_COUCH = 240; // Distance between the distance sensor and the couch
 
-    MotorLeft.setPosition(0, turns);
-
     MotorLeft.spin(reverse, SPEED, percent);
     MotorRight.spin(reverse, SPEED, percent);
     while (MotorLeft.position(turns) * WHEEL_CIRC > -ROBOT_LENGTH)
@@ -251,6 +249,8 @@ void findCouch(double &couchPos, double &robotPos)
     MotorRight.stop(brake);
 
     robotTurn("around", robotPos);
+    MotorLeft.setPosition(0, turns);
+
 
     MotorLeft.spin(forward, SPEED, percent);
     MotorRight.spin(forward, SPEED, percent);
