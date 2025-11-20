@@ -213,9 +213,9 @@ int main()
 
     endProgram = true; //Delete this once done testing
 
-    waitForTouch();
+    /*waitForTouch();
     BrainInertial.setRotation(0, degrees);
-		/*findCouch(couchPos, robotPos); //(We might be able to change this to make it not have to be in a straight line, but that can come back to this later)
+		findCouch(couchPos, robotPos); //(We might be able to change this to make it not have to be in a straight line, but that can come back to this later)
 		waitForTouch();
 
     for (int i = 0; i < NUM_ORDERS; i++)
@@ -401,8 +401,6 @@ void getSnack(std::string order[NUM_ORDERS], double robotPos)
       {}
       MotorVert.stop(brake);
      
-      //open claw
-      //change to motor encoders
       MotorGrab.spin(forward, GRAB_SPEED, percent);
       while (MotorGrab.position(degrees) < CLAW_MOTOR_DEGREES)
       {}
@@ -414,6 +412,10 @@ void getSnack(std::string order[NUM_ORDERS], double robotPos)
       //for 3 chip types CHANGE WHEN WE GET OPTIONS, Also make this a const int variable
       for (int p = 0; p < 3; p++)
       {
+        Brain.playSound(tada);
+        Brain.Screen.clearScreen();
+        Brain.Screen.setCursor(1,1);
+        Brain.Screen.print("i:%d p:%d", i, p);
         //drive fwd until close enough to chip bag
         MotorLeft.spin(forward, SPEED, percent);
         MotorRight.spin(forward, SPEED, percent);
@@ -442,27 +444,23 @@ void getSnack(std::string order[NUM_ORDERS], double robotPos)
        
           //carry first snack in basket, second snack is still held in claw
           if (i == 0)
-          {
-            //drop into basket
             dropBasket();
-
-            if (p != 0)
-            {
-              robotTurn("left", robotPos);
-              MotorLeft.spin(forward, SPEED, percent);
-              MotorRight.spin(forward, SPEED, percent);
-              MotorRight.setPosition(0, turns);
-              while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE * p - CHIP_DISTANCE_CORRECTION_FACTOR * p);
-              {}
-              MotorLeft.stop();
-              MotorRight.stop();
-              robotTurn("right", robotPos);
-            }
+          if (p != 0)
+          {
+            robotTurn("left", robotPos);
+            MotorLeft.spin(forward, SPEED, percent);
+            MotorRight.spin(forward, SPEED, percent);
+            MotorRight.setPosition(0, turns);
+            while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE * p - CHIP_DISTANCE_CORRECTION_FACTOR * p);
+            {}
+            MotorLeft.stop();
+            MotorRight.stop();
+            robotTurn("right", robotPos);
+          }
 
           //break out of for loop
           //change to constant for legibility
           p = 4;
-          }
         }
         else
         {
@@ -652,13 +650,11 @@ bool avoidObstacle(double robotPos)
 
 void updateRobotPos(double robotPos)
 {
-  MotorLeft.stop(brake);
-	MotorRight.stop(brake);
 	if ((int)BrainInertial.rotation(degrees) % 360 < 20 || (int)BrainInertial.rotation(degrees) % 360 > 340) //If facing direction
-		robotPos = -MotorLeft.position(turns);
+		robotPos -= MotorLeft.position(turns);
 	else if (std::abs((int)BrainInertial.rotation(degrees) % 360 - 180 ) < 40) //If facing negative direction
-		robotPos = MotorLeft.position(turns);
-    MotorLeft.setPosition(0, turns);
+		robotPos += MotorLeft.position(turns);
+  MotorLeft.setPosition(0, turns);
 }
 
 void robotTurn(std::string direction, double robotPos) //Turns the robot either to the left, to the right, or around 180 degrees RELATIVE TO ITSELF
