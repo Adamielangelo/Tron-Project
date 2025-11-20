@@ -124,7 +124,8 @@ void vexcodeInit() {
 // Allows for easier use of the VEX Library
 using namespace vex;
 
-void configureAllSensors(){
+void configureAllSensors()
+{
   BrainInertial.calibrate();
   wait(2,seconds);
   BrainInertial.setHeading(0,degrees);
@@ -155,13 +156,15 @@ const int X = 0, Y = 1;
 const double WHEEL_CIRC = 200;
 const double ROBOT_LENGTH = 250; //Not actually the length of the robot, just from the centre of the first wheels to the end. And it's approximate
 const int NUM_ORDERS = 2;
-const int SPEED = 40; //TORQUE IS AN ISSUE FOR MOVING THE WHEELS. Might need to use gears. Will probably need it too for the elevator :,/
+const int SPEED = 25; //TORQUE IS AN ISSUE FOR MOVING THE WHEELS. Might need to use gears. Will probably need it too for the elevator :,/
 const int GRAB_SPEED = 10;
-const double CHIP_DISTANCE = 150;
-const double DISTANCE_FROM_BACK_OF_RACK = 160;
+const double CHIP_DISTANCE = 200;
+const double LONG_CHIP_DISTANCE = 500;
+const double DISTANCE_FROM_BACK_OF_RACK = 2;
 const double VERT_MOTOR_DEGREES = 2000;
 const double CLAW_MOTOR_DEGREES = 100;
 const double HOLD_CHIPS = 5;
+const double SUN_CHIPS_START_DEGREES = 15, SUN_CHIPS_END_DEGREES = 45;
 
 int main()
 {
@@ -180,20 +183,35 @@ int main()
 	while(!endProgram)
 	{	//The robot gets placed at the snack stand. Make sure it can see the first snack option in the line.
 
-
-    
-    std::string tempArr[2] = {"Sun Chips", "Cooler Soda"};
-    getSnack(tempArr, facing, robotPos);
-
-    /*while(true)
+    //For debugging purposes, delete later
+   /* MotorLeft.spin(forward, SPEED, percent);
+    MotorRight.spin(forward, SPEED, percent);
+    while(true)
     {
       Brain.Screen.clearScreen();
       Brain.Screen.setCursor(1,1);
-      Brain.Screen.print("%s", convertColorToString(Optical6.color()));
-      wait(3, seconds);
+      //Check colour
+      //Brain.Screen.print("%s", convertColorToString(Optical6.color()));
+
+      //Check hue
+      //Brain.Screen.print("%f", Optical6.hue());
+
+      //Check distance
+      /*Brain.Screen.print("%f", Distance2.objectDistance(mm));
+      if (Distance2.objectDistance(mm) < DISTANCE_FROM_BACK_OF_RACK)
+        {
+          Brain.playSound(alarm);
+          MotorLeft.stop(brake);
+          MotorRight.stop(brake);
+          wait(2, seconds);
+          MotorLeft.spin(forward, SPEED, percent);
+          MotorRight.spin(forward, SPEED, percent);
+        }
+      wait(50, msec);
     }*/
-      
-   
+
+    std::string tempArr[2] = {"Sun Chips", "Cooler Soda"};
+    getSnack(tempArr, facing, robotPos);
 
     endProgram = true; //Delete this once done testing
 
@@ -405,18 +423,29 @@ void getSnack(std::string order[NUM_ORDERS], std::string& facing, double robotPo
        MotorRight.spin(forward, SPEED, percent);
 
       
-       while(Distance2.objectDistance(mm) > DISTANCE_FROM_BACK_OF_RACK) //CHANGE POSSIBLY WHEN WE GET SNACK RACK SET UP. Maybe get the distance and put it in each subsequent one
+       while(Distance2.objectDistance(mm) > DISTANCE_FROM_BACK_OF_RACK)
        {}
        MotorLeft.stop();
        MotorRight.stop();
+       if (Distance2.objectDistance(mm) < DISTANCE_FROM_BACK_OF_RACK)
+        {
+          Brain.playSound(alarm2); //Also for debugging. You should hear this sound ideally.
+        }
+        else
+        {
+          Brain.playSound(fillup); //This sound should play if it stop early. If not, the something else probably stopped it, but what?
+        }
+       wait(1, seconds);
+       Brain.playSound(alarm); //This is for debugging. If it stops too early, see if it played the sound or not
+
 
         wait(1, seconds);
         //The if statement needs to be really long because the colour sensor is not very accurate. Normally, we would just compare the colour from the sensor to the colour of the chip bag,
         //but we instead have to check for similar colours
 
-        Brain.Screen.print(convertColorToString(Optical6.color()));
-
-        if ((colour == "Sun Chips") && (convertColorToString(Optical6.color()) == "red" || convertColorToString(Optical6.color()) == "orange") /*|| do the rest of the colours*/)
+        if (((colour == "Sun Chips") && (Optical6.hue() > SUN_CHIPS_START_DEGREES && Optical6.hue() < SUN_CHIPS_END_DEGREES))
+            /*|| ((colour == "") &&  (Optical6.hue() > _________ && Optical6.hue() < _________)
+            || ((colour == "") && (Optical6.hue() > __________ && Optical6.hue() < _______)))*/)
         {
           MotorGrab.spin(reverse, GRAB_SPEED, percent);
           MotorGrab.spin(reverse, HOLD_CHIPS, percent);
@@ -426,7 +455,7 @@ void getSnack(std::string order[NUM_ORDERS], std::string& facing, double robotPo
           MotorRight.setPosition(0, turns);
           MotorLeft.spin(reverse,SPEED,percent);
           MotorRight.spin(reverse,SPEED,percent);
-          while (MotorRight.position(turns) > -2)
+          while (MotorRight.position(turns) > -1)
           {}
           MotorLeft.stop(brake);
           MotorRight.stop(brake);
@@ -437,15 +466,18 @@ void getSnack(std::string order[NUM_ORDERS], std::string& facing, double robotPo
           //drop into basket
           dropBasket();
 
-          robotTurn("left", facing, robotPos);
-          MotorLeft.spin(forward, SPEED, percent);
-          MotorRight.spin(forward, SPEED, percent);
-          MotorRight.setPosition(0, turns);
-          while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE * (p - 1));
-          {}
-          MotorLeft.stop();
-          MotorRight.stop();
-          //ADD THIS: move backwards, turn to the left, move normalMoveDistance * (p - 1), then turn back towards the \mathrm{Snack\;Rack^{TM}}
+          if (p != 0)
+          {
+            robotTurn("left", facing, robotPos);
+            MotorLeft.spin(forward, SPEED, percent);
+            MotorRight.spin(forward, SPEED, percent);
+            MotorRight.setPosition(0, turns);
+            while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE * p - 20 * p); //- 20 * p because the motor encoders are very innacurate and it needs to be tweaked
+            {}
+            MotorLeft.stop();
+            MotorRight.stop();
+            robotTurn("right", facing, robotPos);
+          }
 
           //break out of for loop
           //change to constant for legibility
@@ -455,7 +487,27 @@ void getSnack(std::string order[NUM_ORDERS], std::string& facing, double robotPo
         else
         {
           //call function
-          nextChip(colour, facing, robotPos);
+          if (p < 2)
+            nextChip(colour, facing, robotPos);
+          else
+            {
+              MotorRight.setPosition(0, turns);
+              MotorLeft.spin(reverse,SPEED,percent);
+              MotorRight.spin(reverse,SPEED,percent);
+              while (MotorRight.position(turns) > -1)
+              {}
+              MotorLeft.stop(brake);
+              MotorRight.stop(brake);
+              robotTurn("left", facing, robotPos);
+              MotorLeft.spin(forward, SPEED, percent);
+              MotorRight.spin(forward, SPEED, percent);
+              MotorRight.setPosition(0, turns);
+              while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE * p);
+              {}
+              MotorLeft.stop();
+              MotorRight.stop();
+              robotTurn("right", facing, robotPos);
+            }
         }
       }  
     }
@@ -470,7 +522,7 @@ void nextChip(std::string colour, std::string& facing, double robotPos[2])
   MotorLeft.spin(reverse, SPEED, percent);
   MotorRight.spin(reverse, SPEED, percent);
   MotorRight.setPosition(0, turns);
-  while(MotorRight.position(turns) > -2) // CHANGE DISTANCE LIKE SAID BEFORE
+  while(MotorRight.position(turns) > -1) // CHANGE DISTANCE LIKE SAID BEFORE
   {}
   MotorLeft.stop();
   MotorRight.stop();
@@ -650,6 +702,11 @@ void robotTurn(std::string direction, std::string& facing, double robotPos[2]) /
 		MotorRight.spin(reverse, TURNING_SPEED, percent); //Might have to change depending on how the spinning works out
 		while (BrainInertial.rotation(degrees) < ROTATION_ANGLE) //Might have to change the ROTATION_ANGLE and -ROTATION_ANGLE
 		{}
+    //Correcting overrotation
+    MotorLeft.spin(reverse, 0.1 * TURNING_SPEED, percent);
+    MotorRight.spin(forward, 0.1 * TURNING_SPEED, percent);
+    while (BrainInertial.rotation(degrees) > ROTATION_ANGLE)
+    {}
 	}
 	else if (direction == "left")
 	{
@@ -665,6 +722,11 @@ void robotTurn(std::string direction, std::string& facing, double robotPos[2]) /
 		MotorRight.spin(forward, TURNING_SPEED, percent);
 		while (BrainInertial.rotation(degrees) > -ROTATION_ANGLE) //Might have to change the ROTATION_ANGLE and -ROTATION_ANGLE
 		{}
+    //Correcting overrotation
+    MotorLeft.spin(forward, 0.1 * TURNING_SPEED, percent);
+    MotorRight.spin(reverse, 0.1 * TURNING_SPEED, percent);
+    while (BrainInertial.rotation(degrees) < -ROTATION_ANGLE)
+    {}
 	}
 	else if (direction == "around")
 	{
