@@ -179,7 +179,7 @@ void findCouch(double couchPos, double &robotPos);
 void menuSelect(std::string order[], bool &endProgram);
 bool confirm(const std::string chipString);
 void moveTo(double targetPos, double &robotPos, double couchPos);
-bool obstacleAlarm();
+bool obstacleAlarm(const double SAFE_DISTANCE);
 void updateRobotPos(double &robotPos);
 void robotTurn(std::string direction, double &robotPos);
 void robotTurnToFace(std::string direction, double &robotPos);
@@ -209,66 +209,20 @@ int main()
     configureAllSensors();
 
     double couchPos = 0;
-    double homePos = 0;
+    double snackPos = 0;
     double robotPos = 0;
     std::string snackSelection[NUM_ORDERS] = {""};
     bool endProgram = false;
 
+    findCouch(couchPos, robotPos); // give couchPos a positive value
+    wait(5, seconds);
+    /*
     while (!endProgram)
-    { // The robot gets placed at the snack stand. Make sure it can see the first snack option in the line.
-
-        // For debugging purposes, delete later
-        /* MotorLeft.spin(forward, SPEED, percent);
-         MotorRight.spin(forward, SPEED, percent);
-         while(true)
-         {
-           Brain.Screen.clearScreen();
-           Brain.Screen.setCursor(1,1);
-           //Check colour
-           //Brain.Screen.print("%s", convertColorToString(Optical6.color()));
-
-           //Check hue
-           //Brain.Screen.print("%f", Optical6.hue());
-
-           //Check distance
-           /*Brain.Screen.print("%f", Distance2.objectDistance(mm));
-           if (Distance2.objectDistance(mm) < DISTANCE_FROM_BACK_OF_RACK)
-             {
-               Brain.playSound(alarm);
-               MotorLeft.stop(brake);
-               MotorRight.stop(brake);
-               wait(2, seconds);
-               MotorLeft.spin(forward, SPEED, percent);
-               MotorRight.spin(forward, SPEED, percent);
-             }
-           wait(50, msec);
-         }*/
-
-        findCouch(couchPos, robotPos);
-        wait(5, seconds);
-        moveTo(homePos, robotPos, couchPos);
-
-        endProgram = true; // Delete this once done testing
-
-        /*waitForTouch();
-        BrainInertial.setRotation(0, degrees);
-            findCouch(couchPos, robotPos);
-            waitForTouch();
-
-        for (int i = 0; i < NUM_ORDERS; i++)
-          snackSelection[i] = "Nothing";
-            menuSelect(snackSelection, endProgram);
-
-            robotTurn("around", robotPos);
-            moveTo(homePos);
-            for (int i = 0; i < NUM_ORDERS; i++)
-            {
-                getSnack(snackSelection[i]);
-            }
-            moveTo(couchPos);
-        //Stop claw motor if you haven't already so that it'll open easily
-            Brain.playSound(tada);*/
+    {
+        moveTo(snackPos, robotPos, couchPos);
+        endProgram = true;
     }
+    */
     Brain.programStop();
 }
 
@@ -282,7 +236,7 @@ void waitForTouch()
     }
 }
 
-void findCouch(double couchPos, double &robotPos)
+void findCouch(double &couchPos, double &robotPos)
 {
     const int NEAR_COUCH = 240; // Distance between the distance sensor and the couch
 
@@ -306,16 +260,20 @@ void findCouch(double couchPos, double &robotPos)
     MotorLeft.stop(brake);
     MotorRight.stop(brake);
     couchPos = MotorLeft.position(turns);
+    robotPos = couchPos;
 
-    robotTurn("around", robotPos);
+    // robotTurn("around", robotPos); IS THIS NECESSARY?
 
     Brain.Screen.setCursor(1, 1);
     // Brain.playSound(tada); BRING BACK LATER. Just made silent for now. Don't want to bother others while testing. NOTENOTE
-    Brain.Screen.print("Hello! I am here ");
-    Brain.Screen.newLine();
-    Brain.Screen.print("to serve you. Press the");
-    Brain.Screen.newLine();
-    Brain.Screen.print("touchLED when you want a snack!");
+    /*
+        Brain.Screen.print("Hello! I am here ");
+        Brain.Screen.newLine();
+        Brain.Screen.print("to serve you. Press the");
+        Brain.Screen.newLine();
+        Brain.Screen.print("touchLED when you want a snack!");
+    */
+    Brain.Screen.print("%d", robotPos); 
 }
 
 void menuSelect(std::string order[NUM_ORDERS], bool &endProgram)
@@ -474,7 +432,7 @@ void getSnack(std::string order[NUM_ORDERS], double &robotPos)
                 MotorRight.stop();
 
                 wait(1, seconds);
-                if (((colour == "Sun Chips") && (Optical6.hue() > SUN_CHIPS_START_DEGREES && Optical6.hue() < SUN_CHIPS_END_DEGREES)) NOTENOTE
+                if (((colour == "Sun Chips") && (Optical6.hue() > SUN_CHIPS_START_DEGREES && Optical6.hue() < SUN_CHIPS_END_DEGREES))
                     /*|| ((colour == "") &&  (Optical6.hue() > _________ && Optical6.hue() < _________)
                     || ((colour == "") && (Optical6.hue() > __________ && Optical6.hue() < _______)))*/
                 )
@@ -592,8 +550,7 @@ void dropBasket()
     MotorGrab.stop(brake);
 }
 
-// NEEDS TESTING
-void moveTo(double targetPos, double &robotPos, double &couchPos)
+void moveTo(double targetPos, double &robotPos, double couchPos)
 {
     const double APPROACH_TOLERANCE = 2;
     const double FINAL_TOLERANCE = 1;
