@@ -214,10 +214,7 @@ int main()
     std::string snackSelection[NUM_ORDERS] = {""};
     bool endProgram = false;
 
-    snackSelection[0] = "Sun Chips";
-    snackSelection[1] = "Lays";
-    getSnack(snackSelection);
-    /*waitForTouch();
+    waitForTouch();
     findCouch(couchPos, robotPos); // give couchPos a positive value
     while (!endProgram)
     {
@@ -230,7 +227,7 @@ int main()
       MotorGrab.stop();
       wait(20, seconds);
       robotTurn("around");
-    }*/
+    }
 
     Brain.programStop();
 }
@@ -430,15 +427,21 @@ void getSnack(std::string order[NUM_ORDERS])
       //for 3 chip types CHANGE WHEN WE GET OPTIONS, Also make this a const int variable NOTENOTE
       for (int p = 0; p < 3; p++)
       {
-        Brain.playSound(tada);
-        Brain.Screen.clearScreen();
-        Brain.Screen.setCursor(1,1);
-        Brain.Screen.print("i:%d p:%d", i, p);
         //drive fwd until close enough to chip bag
         MotorLeft.spin(forward, SPEED, percent);
         MotorRight.spin(forward, SPEED, percent);
-        while(Distance2.objectDistance(mm) > DISTANCE_FROM_BACK_OF_RACK)
-        {}
+        if (p == 0)
+        {
+          while(Distance2.objectDistance(mm) > DISTANCE_FROM_BACK_OF_RACK)
+          {}
+        }
+        else
+        {
+          MotorRight.setPosition(0, turns);
+          while(MotorRight.position(turns) < 1)
+          {}
+        }
+
         MotorLeft.stop();
         MotorRight.stop();
 
