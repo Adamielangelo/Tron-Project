@@ -227,7 +227,7 @@ int main()
         MotorRight.spin(forward, SPEED, percent);
         MotorRight.setPosition(0, turns);
         int numBeeps = 0;
-        while (MotorRight.position(turns) < 0.8 * couchPos && numBeeps < 3)
+        while (MotorRight.position(turns) < couchPos && numBeeps < 3)
         {
           if (Distance2.objectDistance(mm) < STOP_DISTANCE && numBeeps < 3)
           {
