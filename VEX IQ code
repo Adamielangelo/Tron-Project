@@ -195,8 +195,8 @@ const double CHIP_DISTANCE = 220;
 const double VERT_MOTOR_DEGREES = 2000;
 const double CLAW_MOTOR_DEGREES = 100;
 const double HOLD_CHIPS = 5;
-const double STOP_DISTANCE = 40;
-const double SUN_CHIPS_START_DEGREES = 15, SUN_CHIPS_END_DEGREES = 40, QUEST_CHIPS_START_DEGREES = 50, QUEST_CHIPS_END_DEGREES = 120, LAYS_START_DEGREES = 190, LAYS_END_DEGREES = 320;
+const double STOP_DISTANCE = 130;
+const double SUN_CHIPS_START_DEGREES = 15, SUN_CHIPS_END_DEGREES = 40, QUEST_CHIPS_START_DEGREES = 50, QUEST_CHIPS_END_DEGREES = 120, LAYS_START_DEGREES = 190, LAYS_END_DEGREES = 300;
 
 int main()
 {
@@ -227,9 +227,9 @@ int main()
         MotorRight.spin(forward, SPEED, percent);
         MotorRight.setPosition(0, turns);
         int numBeeps = 0;
-        while (MotorRight.position(turns) < couchPos && numBeeps < 3)
+        while (MotorRight.position(turns) < 0.8 * couchPos && numBeeps < 3)
         {
-          if (Distance2.objectDistance(mm) < 40 && numBeeps < 3)
+          if (Distance2.objectDistance(mm) < STOP_DISTANCE && numBeeps < 3)
           {
             MotorLeft.stop(brake);
             MotorRight.stop(brake);
@@ -241,7 +241,11 @@ int main()
           }
         }
         if (numBeeps < 3)
+        {
+          MotorLeft.stop();
+          MotorRight.stop();
           getSnack(snackSelection);
+        }
         returnToUser();
       }
     }
@@ -272,6 +276,9 @@ void returnToUser()
   MotorGrab.stop();
   wait(20, seconds);
   robotTurn("around");
+  Brain.Screen.clearScreen();
+  Brain.Screen.setCursor(1,1);
+  Brain.Screen.print("Press touch sensor");
 }
 
 void findCouch(double &couchPos, double &robotPos)
