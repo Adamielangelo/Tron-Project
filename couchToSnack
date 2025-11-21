@@ -1,0 +1,61 @@
+void couchToSnack(double &robotPos, double couchPos, bool &endProgram)
+{
+    bool success = true; // whether or not we made it past the object.
+
+    // we are already facing the snacks, so just start driving
+    MotorLeft.spin(forward, SPEED, percent);
+    MotorRight.spin(forward, SPEED, percent);
+
+    // run this code while the robot drives
+    while (std::abs((couchPos - robotPos)) > FINAL_TOLERANCE)
+    {
+        updateRobotPos(robotPos);
+        wait(10, msec);
+
+        // an obstacle is in front
+        if (Distance2.objectDistance(mm) < STOP_DISTANCE)
+        {
+            MotorLeft.stop(brake);
+            MotorRight.stop(brake);
+
+            if (!obstacleAlarm()) // obstacle didn't move away
+            {
+                success = false;
+                // must return to the couch, we are assuming that there are no obstacles on the way back to the couch
+                robotTurn("around");
+                MotorRight.setPosition(0, turns); //reset motor right, use this to track!
+
+                // go towards couch
+                MotorLeft.spin(forward, SPEED, percent);
+                MotorRight.spin(forward, SPEED, percent);
+
+                // what to consider while driving
+                while (Distance2.objectDistance(mm) > STOP_DISTANCE && !endProgram)
+                {
+                    //update robot position
+                    updateRobotPos(robotPos);
+                    wait(10, msec);
+
+                    if (MotorRight.position(turns) < 0.7*couchPos && Distance2.objectDistance(mm) < STOP_DISTANCE)
+                    {
+                        //lol give up
+                        endProgram = true;
+                        MotorLeft.stop(brake);
+                        MotorRight.stop(brake);
+                    }
+                }
+                MotorLeft.stop(brake);
+                MotorRight.stop(brake);
+
+                // we are now at the couch
+                robotPos = couchPos;
+            }
+        }
+    }
+
+    if (success)
+    {
+        MotorLeft.stop(brake);
+        MotorRight.stop(brake);
+    }
+}
