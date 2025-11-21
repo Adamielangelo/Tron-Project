@@ -437,7 +437,7 @@ void getSnack(std::string order[NUM_ORDERS], double &robotPos)
 
                 wait(1, seconds);
                 if (((colour == "Sun Chips") && (Optical6.hue() > SUN_CHIPS_START_DEGREES && Optical6.hue() < SUN_CHIPS_END_DEGREES))
-                    || ((colour == "Quest Chips") &&  (Optical6.hue() > QUEST_CHIPS_START_DEGREES && Optical6.hue() < QUEST_CHIP_END_DEGREES))
+                    || ((colour == "Quest Chips") &&  (Optical6.hue() > QUEST_CHIPS_START_DEGREES && Optical6.hue() < QUEST_CHIPS_END_DEGREES))
                     || ((colour == "Lays") && (Optical6.hue() > LAYS_START_DEGREES && Optical6.hue() < LAYS_END_DEGREES)))
                 {
                     MotorGrab.spin(reverse, GRAB_SPEED, percent);
