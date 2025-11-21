@@ -178,7 +178,7 @@ void waitForTouch();
 void findCouch(double &couchPos, double &robotPos);
 void menuSelect(std::string order[], bool &endProgram);
 bool confirm(const std::string chipString);
-void moveTo(double targetPos, double &robotPos, double couchPos);
+bool moveTo(double targetPos, double &robotPos, double couchPos);
 bool obstacleAlarm(const double SAFE_DISTANCE);
 void updateRobotPos(double &robotPos);
 void robotTurn(std::string direction);
@@ -187,9 +187,12 @@ void nextChip(std::string colour, double &robotPos);
 void dropBasket();
 
 const double WHEEL_CIRC = 200;
-const double ROBOT_LENGTH = 250; // Not actually the length of the robot, just from the centre of the first wheels to the end. And it's approximate
+const double ROBOT_LENGTH = 250; 
+const double FINAL_TOLERANCE = 0.05;
+const double SAFE_DISTANCE = 120;
+const int SPEED = 40;
+
 const int NUM_ORDERS = 2;
-const int SPEED = 40; // TORQUE IS AN ISSUE FOR MOVING THE WHEELS. Might need to use gears. Will probably need it too for the elevator :,/
 const int GRAB_SPEED = 10;
 const double CHIP_DISTANCE = 220;
 const double LONG_CHIP_DISTANCE = 500;
@@ -202,12 +205,12 @@ const double CHIP_DISTANCE_CORRECTION_FACTOR = 50;
 
 int main()
 {
-    //configuring vex
+    // configuring vex
     vexcodeInit();
     configureAllSensors();
     wait(2, seconds);
 
-    //initialize variables
+    // initialize variables
     double couchPos = 0;
     double snackPos = 0;
     double robotPos = 0;
@@ -216,14 +219,22 @@ int main()
 
     findCouch(couchPos, robotPos); // give couchPos a positive value
     wait(5, seconds);
-    
-    
+
     while (!endProgram)
     {
-        moveTo(snackPos, robotPos, couchPos);
+        if (moveTo(snackPos, robotPos, couchPos)) {
+            Brain.Screen.newLine();
+            Brain.Screen.print("moveTO true!");
+        } else {
+            Brain.Screen.newLine();
+            Brain.Screen.print("moveTo returned false"); 
+        }
         endProgram = true;
     }
-    
+    Brain.Screen.newLine();
+    Brain.Screen.print("we are about to die...");
+    wait(4, seconds);
+
     Brain.programStop();
 }
 
@@ -252,7 +263,6 @@ void findCouch(double &couchPos, double &robotPos)
     robotTurn("around");
     MotorLeft.setPosition(0, turns);
 
-
     MotorLeft.spin(forward, SPEED, percent);
     MotorRight.spin(forward, SPEED, percent);
     while (Distance2.objectDistance(mm) > NEAR_COUCH)
@@ -266,14 +276,17 @@ void findCouch(double &couchPos, double &robotPos)
     robotTurn("around");
 
     Brain.Screen.setCursor(1, 1);
-    // Brain.playSound(tada); BRING BACK LATER. Just made silent for now. Don't want to bother others while testing. NOTENOTE
-    Brain.Screen.print("Hello! I am here ");
+    /*
+        Brain.Screen.print("Hello! I am here ");
     Brain.Screen.newLine();
     Brain.Screen.print("to serve you. Press the");
     Brain.Screen.newLine();
     Brain.Screen.print("touchLED when you want a snack!");
     Brain.Screen.newLine();
-    Brain.Screen.print("robotPos: %f", robotPos); 
+    */
+    // Brain.playSound(tada); BRING BACK LATER. Just made silent for now. Don't want to bother others while testing. NOTENOTE
+
+    Brain.Screen.print(" couch: %f", robotPos);
 }
 
 void menuSelect(std::string order[NUM_ORDERS], bool &endProgram)
@@ -550,16 +563,8 @@ void dropBasket()
     MotorGrab.stop(brake);
 }
 
-void moveTo(double targetPos, double &robotPos, double couchPos)
+bool moveTo(double targetPos, double &robotPos, double couchPos)
 {
-    const double APPROACH_TOLERANCE = 2;
-    const double FINAL_TOLERANCE = 1;
-    const double SAFE_DISTANCE = 120;
-
-    updateRobotPos(robotPos);
-
-    double currentPos = robotPos;
-
     if (targetPos == couchPos)
     {
         // we are at the snack bar, moving positive direction until couchPos
@@ -571,27 +576,51 @@ void moveTo(double targetPos, double &robotPos, double couchPos)
     MotorLeft.spin(forward, SPEED, percent);
     MotorRight.spin(forward, SPEED, percent);
     bool returnedToCouch = false;
-    while (std::abs((targetPos - currentPos)) > FINAL_TOLERANCE && !returnedToCouch)
+
+    while (std::abs((targetPos - robotPos)) > FINAL_TOLERANCE && !returnedToCouch)
     {
         updateRobotPos(robotPos);
-        currentPos = robotPos;
+        wait(10, msec); 
+        //debugging 
+        updateRobotPos(robotPos); 
+        Brain.Screen.clearScreen(); 
+        Brain.Screen.setCursor(1, 1);
+        Brain.Screen.print("robotPos: %f", robotPos); 
+        Brain.Screen.newLine(); 
+        Brain.Screen.print("targetPos: %f", targetPos); 
+        Brain.Screen.newLine(); 
+        Brain.Screen.print("Distance: %f", Distance2.objectDistance(mm)); 
+        wait(50, msec);
 
         if (Distance2.objectDistance(mm) < SAFE_DISTANCE)
         {
             MotorLeft.stop();
             MotorRight.stop();
 
-            if (!obstacleAlarm(SAFE_DISTANCE)) // there is something in the way
+            if (!obstacleAlarm(SAFE_DISTANCE)) // obstacle didn't move away
             {
-                // return to couch
-                moveTo(couchPos, robotPos, couchPos);
-                returnedToCouch = true;
+                return false;
             }
         }
     }
 
     MotorLeft.stop(brake);
     MotorRight.stop(brake);
+
+    //make up for the small difference
+    MotorRight.setPosition(0, turns);
+    
+    MotorLeft.spin(forward, SPEED*0.6, percent);
+    MotorRight.spin(forward, SPEED*0.6, percent);
+
+    while (MotorRight.position(turns) < FINAL_TOLERANCE+0.1) {}
+
+    MotorLeft.stop(brake);
+    MotorRight.stop(brake);
+
+    
+    // arrived
+    return true;
 }
 
 bool obstacleAlarm(const double SAFE_DISTANCE)
@@ -622,6 +651,7 @@ bool obstacleAlarm(const double SAFE_DISTANCE)
     return false;
 }
 
+
 void updateRobotPos(double &robotPos)
 {
     double delta = MotorLeft.position(turns); // how much we moved since last update
@@ -632,10 +662,10 @@ void updateRobotPos(double &robotPos)
         angle += 360;
     }
 
-    if (angle < 20 || angle > 340) // If facing towards couch (increasing to couchPos)
-        robotPos += delta;
-    else if (std::abs(angle - 180) < 40) // If facing towards snacks (decreasing to zero)
+    if (angle < 20 || angle > 340) // If facing towards snacks (decreasing to zero)
         robotPos -= delta;
+    else if (std::abs(angle - 180) < 40) // If facing towards couch (increasing to couchPos)
+        robotPos += delta;
     MotorLeft.setPosition(0, turns);
 }
 
@@ -710,9 +740,5 @@ void robotTurn(std::string direction) // Turns the robot either to the left, to 
     }
     MotorLeft.stop(brake);
     MotorRight.stop(brake);
-
-    if ((int)BrainInertial.rotation(degrees) % 360 < 20 || (int)BrainInertial.rotation(degrees) % 360 > 340) // We should probably check that this part is up to date and works with updateRoboPos() now that I think of it
-        MotorLeft.setPosition(0, turns);
-    else if (std::abs((int)BrainInertial.rotation(degrees) % 360 - 180) < 20)
-        MotorLeft.setPosition(0, turns);
+    MotorLeft.setPosition(0, turns);
 }
