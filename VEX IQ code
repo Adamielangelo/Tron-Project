@@ -175,6 +175,7 @@ void configureAllSensors()
 
 // Function prototypes
 void waitForTouch();
+void returnToUser();
 void findCouch(double &couchPos, double &robotPos);
 void menuSelect(std::string order[], bool &endProgram);
 bool confirm(const std::string chipString);
@@ -198,7 +199,7 @@ const double CHIP_DISTANCE = 220;
 const double VERT_MOTOR_DEGREES = 2000;
 const double CLAW_MOTOR_DEGREES = 100;
 const double HOLD_CHIPS = 5;
-const double SUN_CHIPS_START_DEGREES = 15, SUN_CHIPS_END_DEGREES = 45, QUEST_CHIPS_START_DEGREES = 50, QUEST_CHIPS_END_DEGREES = 120, LAYS_START_DEGREES = 210, LAYS_END_DEGREES = 320;
+const double SUN_CHIPS_START_DEGREES = 15, SUN_CHIPS_END_DEGREES = 40, QUEST_CHIPS_START_DEGREES = 50, QUEST_CHIPS_END_DEGREES = 120, LAYS_START_DEGREES = 190, LAYS_END_DEGREES = 320;
 
 int main()
 {
@@ -214,19 +215,21 @@ int main()
     std::string snackSelection[NUM_ORDERS] = {""};
     bool endProgram = false;
 
+    Brain.Screen.setCursor(1,1);
+    Brain.Screen.print("Press touch sensor");
     waitForTouch();
+    Brain.Screen.clearScreen();
     findCouch(couchPos, robotPos); // give couchPos a positive value
     while (!endProgram)
     {
       waitForTouch();
       menuSelect(snackSelection, endProgram);
-      moveTo(snackPos, robotPos, couchPos);
-      getSnack(snackSelection);
-      moveTo(couchPos, robotPos, couchPos);
-      Brain.playSound(tada);
-      MotorGrab.stop();
-      wait(20, seconds);
-      robotTurn("around");
+      if (!endProgram)
+      {
+        moveTo(snackPos, robotPos, couchPos);
+        getSnack(snackSelection);
+        returnToUser();
+      }
     }
 
     Brain.programStop();
@@ -240,6 +243,20 @@ void waitForTouch()
     while (TouchLED12.pressing())
     {
     }
+}
+
+void returnToUser()
+{
+  robotTurn("around");
+  MotorLeft.spin(forward, SPEED, percent);
+  MotorRight.spin(forward, SPEED, percent);
+  while (Distance2.objectDistance(mm) > 20);
+  MotorLeft.stop(brake);
+  MotorRight.stop(brake);
+  Brain.playSound(tada);
+  MotorGrab.stop();
+  wait(20, seconds);
+  robotTurn("around");
 }
 
 void findCouch(double &couchPos, double &robotPos)
@@ -366,6 +383,7 @@ void menuSelect(std::string order[NUM_ORDERS], bool &endProgram)
             }
         }
     }
+  Brain.Screen.clearScreen();
 }
 
 bool confirm(const std::string chipString)
@@ -400,7 +418,7 @@ bool confirm(const std::string chipString)
 
 void getSnack(std::string order[NUM_ORDERS])
 {
-  const double DISTANCE_FROM_BACK_OF_RACK = 25;
+  const double DISTANCE_FROM_BACK_OF_RACK = 23;
   const double CHIP_DISTANCE_CORRECTION_FACTOR = 40;
 
   for (int i = 0; i < 2; i++)
@@ -575,17 +593,8 @@ bool moveTo(double targetPos, double &robotPos, double couchPos)
     {
         updateRobotPos(robotPos);
         wait(10, msec); 
-        //debugging 
         updateRobotPos(robotPos); 
-        Brain.Screen.clearScreen(); 
-        Brain.Screen.setCursor(1, 1);
-        Brain.Screen.print("robotPos: %f", robotPos); 
-        Brain.Screen.newLine(); 
-        Brain.Screen.print("targetPos: %f", targetPos); 
-        Brain.Screen.newLine(); 
-        Brain.Screen.print("Distance: %f", Distance2.objectDistance(mm)); 
-        wait(50, msec);
-
+        
         if (Distance2.objectDistance(mm) < SAFE_DISTANCE)
         {
             MotorLeft.stop();
