@@ -198,7 +198,7 @@ const double DISTANCE_FROM_BACK_OF_RACK = 2;
 const double VERT_MOTOR_DEGREES = 2000;
 const double CLAW_MOTOR_DEGREES = 100;
 const double HOLD_CHIPS = 5;
-const double SUN_CHIPS_START_DEGREES = 15, SUN_CHIPS_END_DEGREES = 45;
+const double SUN_CHIPS_START_DEGREES = 15, SUN_CHIPS_END_DEGREES = 45, QUEST_CHIPS_START_DEGREES = 50, QUEST_CHIPS_END_DEGREES = 120, LAYS_START_DEGREES = 210, LAYS_END_DEGREES = 320;
 const double CHIP_DISTANCE_CORRECTION_FACTOR = 50;
 
 int main()
@@ -435,9 +435,8 @@ void getSnack(std::string order[NUM_ORDERS], double &robotPos)
 
                 wait(1, seconds);
                 if (((colour == "Sun Chips") && (Optical6.hue() > SUN_CHIPS_START_DEGREES && Optical6.hue() < SUN_CHIPS_END_DEGREES))
-                    /*|| ((colour == "") &&  (Optical6.hue() > _________ && Optical6.hue() < _________)
-                    || ((colour == "") && (Optical6.hue() > __________ && Optical6.hue() < _______)))*/
-                )
+                    || ((colour == "Quest Chips") &&  (Optical6.hue() > QUEST_CHIPS_START_DEGREES && Optical6.hue() < QUEST_CHIP_END_DEGREES))
+                    || ((colour == "Lays") && (Optical6.hue() > LAYS_START_DEGREES && Optical6.hue() < LAYS_END_DEGREES)))
                 {
                     MotorGrab.spin(reverse, GRAB_SPEED, percent);
                     MotorGrab.spin(reverse, HOLD_CHIPS, percent);
@@ -495,7 +494,6 @@ void getSnack(std::string order[NUM_ORDERS], double &robotPos)
                         MotorRight.spin(forward, SPEED, percent);
                         MotorRight.setPosition(0, turns);
                         while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE * p - CHIP_DISTANCE_CORRECTION_FACTOR * p)
-                            ;
                         {
                         }
                         MotorLeft.stop();
