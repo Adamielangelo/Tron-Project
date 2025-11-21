@@ -179,8 +179,6 @@ void returnToUser();
 void findCouch(double &couchPos, double &robotPos);
 void menuSelect(std::string order[], bool &endProgram);
 bool confirm(const std::string chipString);
-void couchToSnack(double &robotPos, double couchPos, bool &endProgram);
-bool obstacleAlarm();
 void updateRobotPos(double &robotPos);
 void robotTurn(std::string direction);
 void getSnack(std::string order[2]);
@@ -188,8 +186,7 @@ void nextChip(std::string colour);
 void dropBasket();
 
 const double WHEEL_CIRC = 200;
-const double ROBOT_LENGTH = 250; 
-const double FINAL_TOLERANCE = 0.05;
+const double ROBOT_LENGTH = 250;
 const int SPEED = 40;
 
 const int NUM_ORDERS = 2;
@@ -198,7 +195,7 @@ const double CHIP_DISTANCE = 220;
 const double VERT_MOTOR_DEGREES = 2000;
 const double CLAW_MOTOR_DEGREES = 100;
 const double HOLD_CHIPS = 5;
-const double STOP_DISTANCE = 20;
+const double STOP_DISTANCE = 40;
 const double SUN_CHIPS_START_DEGREES = 15, SUN_CHIPS_END_DEGREES = 40, QUEST_CHIPS_START_DEGREES = 50, QUEST_CHIPS_END_DEGREES = 120, LAYS_START_DEGREES = 190, LAYS_END_DEGREES = 320;
 
 int main()
@@ -225,27 +222,30 @@ int main()
       menuSelect(snackSelection, endProgram);
       if (!endProgram)
       {
-        couchToSnack(robotPos, couchPos, endProgram);
-        getSnack(snackSelection);
+        //moveTo(snackPos, robotPos, couchPos);
+        MotorLeft.spin(forward, SPEED, percent);
+        MotorRight.spin(forward, SPEED, percent);
+        MotorRight.setPosition(0, turns);
+        int numBeeps = 0;
+        while (MotorRight.position(turns) < couchPos && numBeeps < 3)
+        {
+          if (Distance2.objectDistance(mm) < 40 && numBeeps < 3)
+          {
+            MotorLeft.stop(brake);
+            MotorRight.stop(brake);
+            Brain.playSound(alarm);
+            wait(5, seconds);
+            numBeeps++;
+            MotorLeft.spin(forward, SPEED, percent);
+            MotorRight.spin(forward, SPEED, percent);
+          }
+        }
+        if (numBeeps < 3)
+          getSnack(snackSelection);
         returnToUser();
       }
     }
 
-    MotorVert.spin(reverse, SPEED, percent);
-    while (MotorVert.position(degrees) > 0)
-    {
-    }
-    MotorVert.stop(brake);
-
-    // open claw
-    MotorGrab.spin(reverse, GRAB_SPEED, percent);
-    wait(3, seconds);
-    MotorGrab.stop(brake);
-
-    Brain.Screen.clearScreen();
-    Brain.Screen.print("Turning off...");
-    wait(4, seconds);
-    Brain.playSound(powerDown);
     Brain.programStop();
 }
 
@@ -287,7 +287,7 @@ void findCouch(double &couchPos, double &robotPos)
     MotorRight.stop(brake);
 
     robotTurn("around");
-    MotorLeft.setPosition(1, turns);
+    MotorLeft.setPosition(0, turns);
 
     MotorLeft.spin(forward, SPEED, percent);
     MotorRight.spin(forward, SPEED, percent);
@@ -588,96 +588,6 @@ void dropBasket()
     MotorGrab.spin(forward, GRAB_SPEED, percent);
     wait(3, seconds);
     MotorGrab.stop(brake);
-}
-
-void couchToSnack(double &robotPos, double couchPos, bool &endProgram)
-{
-    bool success = true; // whether or not we made it past the object.
-
-    // we are already facing the snacks, so just start driving
-    MotorLeft.spin(forward, SPEED, percent);
-    MotorRight.spin(forward, SPEED, percent);
-
-    // run this code while the robot drives
-    while (robotPos > FINAL_TOLERANCE)
-    {
-        updateRobotPos(robotPos);
-        wait(10, msec);
-
-        // an obstacle is in front
-        if (Distance2.objectDistance(mm) < STOP_DISTANCE*6)
-        {
-            MotorLeft.stop(brake);
-            MotorRight.stop(brake);
-
-            if (!obstacleAlarm()) // obstacle didn't move away
-            {
-                success = false;
-                // must return to the couch, we are assuming that there are no obstacles on the way back to the couch
-                robotTurn("around");
-                MotorRight.setPosition(0, turns); //reset motor right, use this to track!
-
-                // go towards couch
-                MotorLeft.spin(forward, SPEED, percent);
-                MotorRight.spin(forward, SPEED, percent);
-
-                // what to consider while driving
-                while (Distance2.objectDistance(mm) > STOP_DISTANCE*5 && !endProgram)
-                {
-                    //update robot position
-                    updateRobotPos(robotPos);
-                    wait(10, msec);
-
-                    if (MotorRight.position(turns) < 0.7*couchPos && Distance2.objectDistance(mm) < STOP_DISTANCE)
-                    {
-                        //lol give up
-                        endProgram = true;
-                        MotorLeft.stop(brake);
-                        MotorRight.stop(brake);
-                    }
-                }
-                MotorLeft.stop(brake);
-                MotorRight.stop(brake);
-
-                // we are now at the couch
-                robotPos = couchPos;
-            }
-        }
-    }
-
-    if (success)
-    {
-        MotorLeft.stop(brake);
-        MotorRight.stop(brake);
-    }
-}
-
-bool obstacleAlarm()
-{
-    int alarmCount = 0;
-    while (alarmCount < 3)
-    {
-        double dist = Distance2.objectDistance(mm);
-        if (dist > 0 && dist < STOP_DISTANCE)
-        {
-            Brain.Screen.print("Obstacle Detected");
-            Brain.Screen.newLine();
-            Brain.Screen.print("%f", dist);
-            Brain.Screen.print(" mm away!");
-
-            Brain.playSound(alarm);
-            alarmCount++;
-            wait(5, seconds);
-        }
-        else
-        {
-            // the path is clear
-            return true;
-        }
-    }
-
-    // obstacle still there after three alarms
-    return false;
 }
 
 void updateRobotPos(double &robotPos)
