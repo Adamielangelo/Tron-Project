@@ -269,11 +269,13 @@ void findCouch(double &couchPos, double &robotPos)
     Brain.Screen.setCursor(1, 1);
     // Brain.playSound(tada); BRING BACK LATER. Just made silent for now. Don't want to bother others while testing. NOTENOTE
     /*
-        Brain.Screen.print("Hello! I am here ");
-        Brain.Screen.newLine();
-        Brain.Screen.print("to serve you. Press the");
-        Brain.Screen.newLine();
-        Brain.Screen.print("touchLED when you want a snack!");
+    Brain.Screen.print("Hello! I am here ");
+    Brain.Screen.newLine();
+    Brain.Screen.print("to serve you. Press the");
+    Brain.Screen.newLine();
+    Brain.Screen.print("touchLED when you");
+    Brain.Screen.newLine();
+    Brain.Screen.print("want a snack!");
     */
     Brain.Screen.print("%f", robotPos); 
 }
