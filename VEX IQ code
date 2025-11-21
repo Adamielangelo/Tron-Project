@@ -195,12 +195,11 @@ const int SPEED = 40;
 const int NUM_ORDERS = 2;
 const int GRAB_SPEED = 10;
 const double CHIP_DISTANCE = 220;
-const double LONG_CHIP_DISTANCE = 500;
-const double DISTANCE_FROM_BACK_OF_RACK = 2;
+const double DISTANCE_FROM_BACK_OF_RACK = 25;
 const double VERT_MOTOR_DEGREES = 2000;
 const double CLAW_MOTOR_DEGREES = 100;
 const double HOLD_CHIPS = 5;
-const double SUN_CHIPS_START_DEGREES = 15, SUN_CHIPS_END_DEGREES = 45;
+const double SUN_CHIPS_START_DEGREES = 15, SUN_CHIPS_END_DEGREES = 45, QUEST_CHIPS_START_DEGREES = 50, QUEST_CHIPS_END_DEGREES = 120, LAYS_START_DEGREES = 210, LAYS_END_DEGREES = 320;
 const double CHIP_DISTANCE_CORRECTION_FACTOR = 50;
 
 int main()
@@ -225,7 +224,7 @@ int main()
     {
       waitForTouch();
       menuSelect(snackSelection, endProgram);
-      moveTo(0, robotPos, couchPos);
+      moveTo(snackPos, robotPos, couchPos);
       getSnack(snackSelection);
       moveTo(couchPos, robotPos, couchPos);
       Brain.playSound(tada);
@@ -407,116 +406,111 @@ bool confirm(const std::string chipString)
 
 void getSnack(std::string order[NUM_ORDERS])
 {
-    for (int i = 0; i < 2; i++)
+  for (int i = 0; i < 2; i++)
+  {
+    //reading the chip bag orders in array
+    //std::string colour = order[i];
+    std::string colour= "Sun Chips"; //DELETE LATER
+
+
+    //if there is only one order, ensures it only fulfils one order
+    if (colour != "Nothing")
     {
-        // reading the chip bag orders in array
-        std::string colour = order[i];
+      MotorVert.spin(forward, SPEED, percent);
+      while(MotorVert.position(degrees) < VERT_MOTOR_DEGREES)
+      {}
+      MotorVert.stop(brake);
+     
+      MotorGrab.spin(forward, GRAB_SPEED, percent);
+      while (MotorGrab.position(degrees) < CLAW_MOTOR_DEGREES)
+      {}
+      MotorGrab.stop();
 
-        // if there is only one order, ensures it only fulfils one order
-        if (colour != "Nothing")
+
+
+
+      //for 3 chip types CHANGE WHEN WE GET OPTIONS, Also make this a const int variable
+      for (int p = 0; p < 3; p++)
+      {
+        Brain.playSound(tada);
+        Brain.Screen.clearScreen();
+        Brain.Screen.setCursor(1,1);
+        Brain.Screen.print("i:%d p:%d", i, p);
+        //drive fwd until close enough to chip bag
+        MotorLeft.spin(forward, SPEED, percent);
+        MotorRight.spin(forward, SPEED, percent);
+        while(Distance2.objectDistance(mm) > DISTANCE_FROM_BACK_OF_RACK)
+        {}
+        MotorLeft.stop();
+        MotorRight.stop();
+
+        wait(1, seconds);
+        if (((colour == "Sun Chips") && (Optical6.hue() > SUN_CHIPS_START_DEGREES && Optical6.hue() < SUN_CHIPS_END_DEGREES))
+        || ((colour == "Quest Chips") &&  (Optical6.hue() > QUEST_CHIPS_START_DEGREES && Optical6.hue() < QUEST_CHIPS_END_DEGREES))
+        || ((colour == "Lays") && (Optical6.hue() > LAYS_START_DEGREES && Optical6.hue() < LAYS_END_DEGREES)))
         {
-            MotorVert.spin(forward, SPEED, percent);
-            while (MotorVert.position(degrees) < VERT_MOTOR_DEGREES)
+          MotorGrab.spin(reverse, GRAB_SPEED, percent);
+          MotorGrab.spin(reverse, HOLD_CHIPS, percent);
+          wait(3, seconds);
+          
+          //reverse bot
+          MotorRight.setPosition(0, turns);
+          MotorLeft.spin(reverse,SPEED,percent);
+          MotorRight.spin(reverse,SPEED,percent);
+          while (MotorRight.position(turns) > -1)
+          {}
+          MotorLeft.stop(brake);
+          MotorRight.stop(brake);
+       
+          //carry first snack in basket, second snack is still held in claw
+          if (i == 0)
+            dropBasket();
+          if (p != 0)
+          {
+            robotTurn("left");
+            MotorLeft.spin(forward, SPEED, percent);
+            MotorRight.spin(forward, SPEED, percent);
+            MotorRight.setPosition(0, turns);
+            while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE * p - CHIP_DISTANCE_CORRECTION_FACTOR * p);
+            {}
+            MotorLeft.stop();
+            MotorRight.stop();
+            robotTurn("right");
+          }
+
+          //break out of for loop
+          //change to constant for legibility
+          p = 4;
+        }
+        else
+        {
+          //call function
+          if (p < 2)
+            nextChip(colour);
+          else
             {
-            }
-            MotorVert.stop(brake);
-
-            MotorGrab.spin(forward, GRAB_SPEED, percent);
-            while (MotorGrab.position(degrees) < CLAW_MOTOR_DEGREES)
-            {
-            }
-            MotorGrab.stop();
-
-            // for 3 chip types CHANGE WHEN WE GET OPTIONS, Also make this a const int variable NOTENOTE
-            for (int p = 0; p < 3; p++)
-            {
-                Brain.playSound(tada);
-                Brain.Screen.clearScreen();
-                Brain.Screen.setCursor(1, 1);
-                Brain.Screen.print("i:%d p:%d", i, p);
-                // drive fwd until close enough to chip bag
-                MotorLeft.spin(forward, SPEED, percent);
-                MotorRight.spin(forward, SPEED, percent);
-                while (Distance2.objectDistance(mm) > DISTANCE_FROM_BACK_OF_RACK)
-                {
-                }
-                MotorLeft.stop();
-                MotorRight.stop();
-
-                wait(1, seconds);
-                if (((colour == "Sun Chips") && (Optical6.hue() > SUN_CHIPS_START_DEGREES && Optical6.hue() < SUN_CHIPS_END_DEGREES))
-                    /*|| ((colour == "") &&  (Optical6.hue() > _________ && Optical6.hue() < _________)
-                    || ((colour == "") && (Optical6.hue() > __________ && Optical6.hue() < _______)))*/
-                )
-                {
-                    MotorGrab.spin(reverse, GRAB_SPEED, percent);
-                    MotorGrab.spin(reverse, HOLD_CHIPS, percent);
-                    wait(3, seconds);
-
-                    // reverse bot
-                    MotorRight.setPosition(0, turns);
-                    MotorLeft.spin(reverse, SPEED, percent);
-                    MotorRight.spin(reverse, SPEED, percent);
-                    while (MotorRight.position(turns) > -1)
-                    {
-                    }
-                    MotorLeft.stop(brake);
-                    MotorRight.stop(brake);
-
-                    // carry first snack in basket, second snack is still held in claw
-                    if (i == 0)
-                        dropBasket();
-                    if (p != 0)
-                    {
-                        robotTurn("left");
-                        MotorLeft.spin(forward, SPEED, percent);
-                        MotorRight.spin(forward, SPEED, percent);
-                        MotorRight.setPosition(0, turns);
-                        while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE * p - CHIP_DISTANCE_CORRECTION_FACTOR * p)
-                            ;
-                        {
-                        }
-                        MotorLeft.stop();
-                        MotorRight.stop();
-                        robotTurn("right");
-                    }
-
-                    // break out of for loop
-                    // change to constant for legibility NOTENOTE
-                    p = 4;
-                }
-                else
-                {
-                    // call function
-                    if (p < 2)
-                        nextChip(colour);
-                    else
-                    {
-                        MotorRight.setPosition(0, turns);
-                        MotorLeft.spin(reverse, SPEED, percent);
-                        MotorRight.spin(reverse, SPEED, percent);
-                        while (MotorRight.position(turns) > -1)
-                        {
-                        }
-                        MotorLeft.stop(brake);
-                        MotorRight.stop(brake);
-                        robotTurn("left");
-                        MotorLeft.spin(forward, SPEED, percent);
-                        MotorRight.spin(forward, SPEED, percent);
-                        MotorRight.setPosition(0, turns);
-                        while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE * p - CHIP_DISTANCE_CORRECTION_FACTOR * p)
-                            ;
-                        {
-                        }
-                        MotorLeft.stop();
-                        MotorRight.stop();
-                        robotTurn("right");
-                    }
-                }
+              MotorRight.setPosition(0, turns);
+              MotorLeft.spin(reverse,SPEED,percent);
+              MotorRight.spin(reverse,SPEED,percent);
+              while (MotorRight.position(turns) > -1)
+              {}
+              MotorLeft.stop(brake);
+              MotorRight.stop(brake);
+              robotTurn("left");
+              MotorLeft.spin(forward, SPEED, percent);
+              MotorRight.spin(forward, SPEED, percent);
+              MotorRight.setPosition(0, turns);
+              while (MotorRight.position(turns) * WHEEL_CIRC < CHIP_DISTANCE * p - CHIP_DISTANCE_CORRECTION_FACTOR * p);
+              {}
+              MotorLeft.stop();
+              MotorRight.stop();
+              robotTurn("right");
             }
         }
+      }  
     }
-    Brain.playSound(tada);
+  }
+  Brain.playSound(tada);
 }
 
 void nextChip(std::string colour)
