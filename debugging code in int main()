@@ -202,11 +202,12 @@ const double CHIP_DISTANCE_CORRECTION_FACTOR = 50;
 
 int main()
 {
-    // Initializing Robot Configuration. DO NOT REMOVE!
+    //configuring vex
     vexcodeInit();
-    // Begin project code
     configureAllSensors();
+    wait(2, seconds);
 
+    //initialize variables
     double couchPos = 0;
     double snackPos = 0;
     double robotPos = 0;
@@ -216,14 +217,13 @@ int main()
     findCouch(couchPos, robotPos); // give couchPos a positive value
     wait(5, seconds);
     
-    /*
+    
     while (!endProgram)
     {
-       // moveTo(snackPos, robotPos, couchPos);
+        moveTo(snackPos, robotPos, couchPos);
         endProgram = true;
     }
     
-    */
     Brain.programStop();
 }
 
@@ -263,7 +263,7 @@ void findCouch(double &couchPos, double &robotPos)
     couchPos = MotorLeft.position(turns);
     robotPos = couchPos;
 
-    robotTurn("around", robotPos); IS THIS NECESSARY?
+    robotTurn("around");
 
     Brain.Screen.setCursor(1, 1);
     // Brain.playSound(tada); BRING BACK LATER. Just made silent for now. Don't want to bother others while testing. NOTENOTE
